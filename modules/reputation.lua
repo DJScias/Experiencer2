@@ -120,18 +120,30 @@ function module:GetText()
 	
 	local primaryText = {};
 	local secondaryText = {};
-	
-	local rep_text = {};
-	
+		
 	local name, standing, minReputation, maxReputation, currentReputation, factionID = GetWatchedFactionInfo();
-	local friendLevel, friendThreshold, nextFriendThreshold = select(7, GetFriendshipReputation(factionID));
+	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+	local friendshipFactionID = reputationInfo.friendshipFactionID
+	local friendLevel = reputationInfo.reaction;
+	local friendStanding = reputationInfo.standing;
+	local friendThreshold = reputationInfo.reactionThreshold;
+	local nextFriendThreshold = reputationInfo.nextThreshold;
+
+	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
 	
 	local standingText = "";
 	local isCapped = false;
 	local hasRewardPending = false;
 	local paragonLevel = 0;
-	
-	if(friendLevel) then
+
+	if(majorFactionData) then
+		local renownLevel = majorFactionData.renownLevel;
+		local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+		standingText = string.format("|cff00ccffRenown %s|r", renownLevel);
+		if(not renownLevelThreshold) then
+			isCapped = true;
+		end
+	elseif(friendshipFactionID > 0) then
 		standingText = friendLevel;
 		if(not nextFriendThreshold) then
 			isCapped = true;
@@ -162,6 +174,17 @@ function module:GetText()
 		local remainingReputation = maxReputation - currentReputation;
 		local realCurrentReputation = currentReputation - minReputation;
 		local realMaxReputation = maxReputation - minReputation;
+		if(majorFactionData) then
+			local renownReputationEarned = majorFactionData.renownReputationEarned;
+			local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+			remainingReputation = renownLevelThreshold - renownReputationEarned;
+			realCurrentReputation = renownReputationEarned;
+			realMaxReputation = renownLevelThreshold;
+		elseif(friendshipFactionID > 0) then
+			remainingReputation = nextFriendThreshold - friendStanding;
+			realCurrentReputation = friendStanding - friendThreshold;
+			realMaxReputation = nextFriendThreshold - friendThreshold;
+		end
 		
 		local progress = realCurrentReputation / realMaxReputation;
 		local color = Addon:GetProgressColor(progress);
@@ -200,14 +223,29 @@ end
 
 function module:GetChatMessage()
 	local name, standing, minReputation, maxReputation, currentReputation, factionID = GetWatchedFactionInfo();
-	local friendLevel, friendThreshold, nextFriendThreshold = select(7, GetFriendshipReputation(factionID));
-	
+
+	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+	local friendshipFactionID = reputationInfo.friendshipFactionID
+	local friendLevel = reputationInfo.reaction;
+	local friendStanding = reputationInfo.standing;
+	local friendThreshold = reputationInfo.reactionThreshold;
+	local nextFriendThreshold = reputationInfo.nextThreshold;
+
+	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+
 	local standingText = "";
 	local isCapped = false;
 	local hasRewardPending = false;
 	local paragonLevel = 0;
 	
-	if(friendLevel) then
+	if(majorFactionData) then
+		local renownLevel = majorFactionData.renownLevel;
+		local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+		standingText = string.format("|cff00ccffRenown %s|r", renownLevel);
+		if(not renownLevelThreshold) then
+			isCapped = true;
+		end
+	elseif(friendshipFactionID > 0) then
 		standingText = friendLevel;
 		if(not nextFriendThreshold) then
 			isCapped = true;
@@ -230,8 +268,15 @@ function module:GetChatMessage()
 	
 	if(not isCapped) then
 		local remaining_rep = maxReputation - currentReputation;
+		if(majorFactionData) then
+			local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+			local renownReputationEarned = majorFactionData.renownReputationEarned;
+			remaining_rep = renownLevelThreshold - renownReputationEarned;
+		elseif(friendshipFactionID > 0) then
+			remaining_rep = nextFriendThreshold - friendStanding;
+		end
 		local progress = (currentReputation - minReputation) / (maxReputation - minReputation);
-		
+
 		local paragonText = "";
 		if(paragonLevel > 0) then
 			paragonText = string.format(" (%dx paragon)", paragonLevel);
@@ -267,15 +312,22 @@ function module:GetBarData()
 	if(module:HasWatchedReputation()) then
 		local name, standing, minReputation, maxReputation, currentReputation, factionID = GetWatchedFactionInfo();
 		data.id = factionID;
-		
-		local friendLevel, friendThreshold, nextFriendThreshold = select(7, GetFriendshipReputation(factionID));
-		
-		local standingText = "";
+
+		local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+		local friendshipFactionID = reputationInfo.friendshipFactionID
+		local friendThreshold = reputationInfo.reactionThreshold;
+		local nextFriendThreshold = reputationInfo.nextThreshold;
+
+		local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+				
 		local isCapped = false;
-		local hasRewardPending = false;
-		local paragonLevel = 0;
-		
-		if(friendLevel and not nextFriendThreshold) then
+
+		if (majorFactionData) then
+			local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+			if (not renownLevelThreshold) then
+				isCapped = true;
+			end
+		elseif(friendshipFactionID > 0 and not nextFriendThreshold) then
 			isCapped = true;
 		elseif(standing == MAX_REPUTATION_REACTION) then
 			isCapped = true;
@@ -296,6 +348,14 @@ function module:GetBarData()
 			data.min  	 = minReputation;
 			data.max  	 = maxReputation;
 			data.current = currentReputation;
+			if(majorFactionData) then
+				local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+				data.min = 0;
+				data.max = renownLevelThreshold;
+			elseif(friendshipFactionID > 0) then
+				data.min = friendThreshold;
+				data.max = nextFriendThreshold;
+			end
 		else
 			data.min     = 0;
 			data.max     = 1;
@@ -433,11 +493,20 @@ function module:GetRecentReputationsMenu()
 		
 		local factionIndex = module:GetReputationID(name);
 		local _, _, standing, _, _, _, _, _, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID = GetFactionInfo(factionIndex);
-		local friend_level = select(7, GetFriendshipReputation(factionID));
+
+		local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+		local friendshipFactionID = reputationInfo.friendshipFactionID;
+		local friend_level = reputationInfo.reaction;
+
+		local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+
 		local standing_text = "";
 		
 		if(not isHeader or hasRep) then
-			if(friend_level) then
+			if (majorFactionData) then
+				local renownLevel = majorFactionData.renownLevel;
+				standing_text = string.format("|cff00ccffRenown %s|r", renownLevel);
+			elseif(friendshipFactionID > 0) then
 				standing_text = friend_level;
 			else
 				standing_text = module:GetStandingColorText(standing)
@@ -469,10 +538,32 @@ function module:GetReputationProgressByFactionID(factionID)
 	local isCapped = false;
 	local isParagon = false;
 	
-	local friendLevel, friendThreshold, nextFriendThreshold = select(7, GetFriendshipReputation(factionID));
-	if(friendLevel) then
+	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+	local friendshipFactionID = reputationInfo.friendshipFactionID
+	local friendLevel = reputationInfo.reaction;
+	local friendStanding = reputationInfo.standing;
+	local friendThreshold = reputationInfo.reactionThreshold;
+	local nextFriendThreshold = reputationInfo.nextThreshold;
+
+	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+
+	if(majorFactionData) then
+		local renownReputationEarned = majorFactionData.renownReputationEarned;
+		local renownLevelThreshold = majorFactionData.renownLevelThreshold;
+		if(not renownLevelThreshold) then
+			isCapped = true;
+		else
+			minReputation = 0;
+			currentReputation = renownReputationEarned;
+			maxReputation = renownLevelThreshold;
+		end
+	elseif(friendshipFactionID > 0) then
 		if(not nextFriendThreshold) then
 			isCapped = true;
+		else
+			minReputation = friendThreshold;
+			currentReputation = friendStanding;
+			maxReputation = nextFriendThreshold;
 		end
 	else
 		if(standing == MAX_REPUTATION_REACTION) then
@@ -490,7 +581,7 @@ function module:GetReputationProgressByFactionID(factionID)
 			end
 		end
 	end
-	
+
 	return currentReputation - minReputation, maxReputation - minReputation, isCapped, isParagon;
 end
 
@@ -517,11 +608,18 @@ function module:GetReputationsMenu()
 				end
 			end
 				
-			local friendLevel = select(7, GetFriendshipReputation(factionID));
+			local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+			local friendshipFactionID = reputationInfo.friendshipFactionID
+			local friendLevel = reputationInfo.reaction;
 			local standingText = "";
+
+			local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
 			
 			if(not isHeader or hasRep) then
-				if(friendLevel) then
+				if(majorFactionData) then
+					local renownLevel = majorFactionData.renownLevel;
+					standingText = string.format("|cff00ccffRenown %s|r", renownLevel);
+				elseif(friendshipFactionID > 0) then
 					standingText = friendLevel;
 				else
 					standingText = module:GetStandingColorText(standing);
