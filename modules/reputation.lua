@@ -688,7 +688,7 @@ function module:GetReputationsMenu()
 				tinsert(current, {
 					text = string.format("%s (%s)%s", name, standingText, progressText),
 					func = function()
-						module:MenuSetWatchedFactionIndex(factionIndex);
+						module:MenuSetWatchedFactionIndex(index);
 					end,
 					checked = function() return isWatched end,
 				})
