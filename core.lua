@@ -15,7 +15,7 @@ local AceDB = LibStub("AceDB-3.0");
 local LibSharedMedia = LibStub("LibSharedMedia-3.0");
 
 -- Adding default media to LibSharedMedia in case they're not already added
-LibSharedMedia:Register("font", "DorisPP", [[Interface\AddOns\Experiencer\media\DORISPP.TTF]]);
+LibSharedMedia:Register("font", "DorisPP", [[Interface\AddOns\experiencer2\Media\DORISPP.TTF]]);
 
 EXPERIENCER_SPLITS_TIP = "You can split Experiencer bar in up to three different sections allowing you to display more information at once.|n|nRight-click the bar to see options.";
 
