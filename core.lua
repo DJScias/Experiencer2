@@ -1,5 +1,6 @@
 ------------------------------------------------------------
--- Experiencer by Sonaza (https://sonaza.com)
+-- Experiencer2 by DJScias (https://github.com/DJScias/Experiencer2)
+-- Originally by Sonaza (https://sonaza.com)
 -- Licensed under MIT License
 -- See attached license text in file LICENSE
 ------------------------------------------------------------

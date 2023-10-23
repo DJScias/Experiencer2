@@ -1,5 +1,5 @@
 ## 5.0.0
-* New GitHub (https://github.com/DJScias/Experiencer) due to original owner quiting WoW.
+* New GitHub (https://github.com/DJScias/Experiencer2) due to original owner quiting WoW.
 * Fixes for Dragonflight:
   * Renown can be tracked.
   * Friendships can be tracked (Tillers, Sabellian/Wrathion, etc..)
