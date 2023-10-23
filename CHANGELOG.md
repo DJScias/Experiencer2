@@ -1,3 +1,6 @@
+## 5.0.1
+* Add support for friendship reputation colors (Tillers, Sabellian/Wrathion, Cobalt Assembly, etc..)
+
 ## 5.0.0
 * New GitHub (https://github.com/DJScias/Experiencer2) due to original owner quiting WoW.
 * Fixes for Dragonflight:
