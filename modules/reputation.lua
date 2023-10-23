@@ -145,7 +145,7 @@ function module:GetText()
 			isCapped = true;
 		end
 	elseif(friendshipFactionID > 0) then
-		standingText = friendLevel;
+		standingText = module:GetFriendShipColorText(friendshipFactionID, friendLevel);
 		if(not nextFriendThreshold) then
 			isCapped = true;
 		end
@@ -508,7 +508,7 @@ function module:GetRecentReputationsMenu()
 				local renownLevel = majorFactionData.renownLevel;
 				standing_text = string.format("|cff00ccffRenown %s|r", renownLevel);
 			elseif(friendshipFactionID > 0) then
-				standing_text = friend_level;
+				standing_text = module:GetFriendShipColorText(friendshipFactionID, friend_level);
 			else
 				standing_text = module:GetStandingColorText(standing)
 			end
@@ -621,7 +621,7 @@ function module:GetReputationsMenu()
 					local renownLevel = majorFactionData.renownLevel;
 					standingText = string.format("|cff00ccffRenown %s|r", renownLevel);
 				elseif(friendshipFactionID > 0) then
-					standingText = friendLevel;
+					standingText = module:GetFriendShipColorText(friendshipFactionID, friendLevel);
 				else
 					standingText = module:GetStandingColorText(standing);
 				end
@@ -738,6 +738,85 @@ function module:GetStandingColorText(standing)
 		colors[standing].g * 255,
 		colors[standing].b * 255,
 		label
+	);
+end
+
+function module:GetFriendShipColorText(friendshipFactionID, standing)
+	local standingLevel = C_GossipInfo.GetFriendshipReputationRanks(friendshipFactionID).currentLevel;
+	local colors = {
+		[1] = {r=0.80, g=0.13, b=0.13}, -- hated
+		[2] = {r=1.00, g=0.25, b=0.00}, -- hostile
+		[3] = {r=0.93, g=0.40, b=0.13}, -- unfriendly
+		[4] = {r=1.00, g=1.00, b=0.00}, -- neutral
+		[5] = {r=0.00, g=0.70, b=0.00}, -- friendly
+		[6] = {r=0.00, g=1.00, b=0.00}, -- honored
+		[7] = {r=0.00, g=0.60, b=1.00}, -- revered
+		[8] = {r=0.00, g=1.00, b=1.00}, -- exalted
+		[9] = {r=0.00, g=1.00, b=1.00}, -- paragon
+	}
+
+	local friendshipColors = {
+		[1] = colors[4], -- Stranger
+		[2] = colors[5], -- Acquaintance/Pal
+		[3] = colors[6], -- Buddy
+		[4] = colors[6], -- Friend
+		[5] = colors[7], -- Good Friend
+		[6] = colors[8], -- Best Friend
+		[9] = colors[9], -- Paragon
+	}
+
+	if (friendshipFactionID == 2135) then -- Chromie
+		friendshipColors = {
+			[1] = colors[4], -- Whelpling
+			[2] = colors[4], -- Temporal Trainee
+			[3] = colors[5], -- Timehopper
+			[4] = colors[5], -- Chrono-Friend
+			[5] = colors[6], -- Bronze Ally
+			[6] = colors[7], -- Epoch-Mender
+			[7] = colors[8], -- Timelord
+		}
+	elseif (friendshipFactionID == 1357) then -- Nomi
+		friendshipColors = {
+			[1] = colors[4], -- Apprentice
+			[2] = colors[4], -- Apprentice
+			[3] = colors[5], -- Journeyman
+			[4] = colors[6], -- Journeyman
+			[5] = colors[7], -- Journeyman
+			[6] = colors[8], -- Expert
+		}
+	elseif (friendshipFactionID == 2517 or friendshipFactionID == 2518) then -- Wrathion/Sabellian
+		friendshipColors = {
+			[1] = colors[4], -- Acquaintance
+			[2] = colors[5], -- Cohort
+			[3] = colors[6], -- Ally
+			[4] = colors[6], -- Fang
+			[5] = colors[7], -- Friend
+			[6] = colors[8], -- True Friend
+			[9] = colors[9], -- Paragon
+		}
+	elseif (friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553) then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi
+		friendshipColors = {
+			[1] = colors[4], -- Neutral    -- Aspirational  -- Anomaly
+			[2] = colors[5], -- Preferred  -- Amateur       -- Future Friend
+			[3] = colors[6], -- Respected  -- Competent     -- Rift-Mender
+			[4] = colors[7], -- Valued     -- Skilled       -- Timewalker
+			[5] = colors[8], -- Esteemed   -- Professional  -- Legend
+		}
+	elseif (friendshipFactionID == 2550) then -- Cobalt Assembly TO-DO: Confirm colors
+		friendshipColors = {
+			[1] = colors[4], -- Empty    
+			[2] = colors[4], -- Low      
+			[3] = colors[5], -- Medium   
+			[4] = colors[6], -- High     
+			[5] = colors[7], -- Maximum  
+		}
+	end
+
+	return string.format('|cff%02x%02x%02x%s|r',
+		friendshipColors[standingLevel].r * 255,
+		friendshipColors[standingLevel].g * 255,
+		friendshipColors[standingLevel].b * 255,
+		standing
 	);
 end
 
