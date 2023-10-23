@@ -1,3 +1,6 @@
+### 5.1.1
+* Proper version bump
+
 ## 5.1.0
 * Add support for friendship reputation colors (Tillers, Sabellian/Wrathion, Cobalt Assembly, etc..)
 
