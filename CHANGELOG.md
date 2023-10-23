@@ -1,3 +1,10 @@
+## 5.0.0
+* New GitHub (https://github.com/DJScias/Experiencer) due to original owner quiting WoW.
+* Fixes for Dragonflight:
+  * Renown can be tracked.
+  * Friendships can be tracked (Tillers, Sabellian/Wrathion, etc..)
+  * Right-click watch faction works again.
+
 ## 4.0.1
 * More fixes by shururuun (https://github.com/shururuun):
   * Fixed max level and quest log scanning.

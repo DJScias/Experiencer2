@@ -1,8 +1,8 @@
 ## Interface: 90001
-## Title: Experiencer
+## Title: Experiencer 2.0
 ## Notes: Simple but advanced tracking progress bar addon
-## Author: Sonaza
-## Version: 4.0.1
+## Author: DJScias (Original: Sonaza)
+## Version: 5.0.0
 ## OptionalDeps: Ace3
 ## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest
 
