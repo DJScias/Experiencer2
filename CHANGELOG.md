@@ -1,3 +1,6 @@
+### 5.1.2
+* TOC bump
+
 ### 5.1.1
 * Proper version bump
 
