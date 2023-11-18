@@ -2,6 +2,7 @@
 * Add Paragon support for Renown reputations (fixes [#2](https://github.com/DJScias/Experiencer2/issues/2)).
 * Fix reputations prior to DF showing Exalted when they are actually Paragon.
 * Potentially fix right-click error due to missing semicolon (fixes [#1](https://github.com/DJScias/Experiencer2/issues/1)).
+* Updated libraries.
 
 ### 5.1.2
 * TOC bump
