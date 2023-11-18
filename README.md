@@ -1,26 +1,44 @@
 # Experiencer 2.0
 Experience bar replacement for World of Warcraft.
 
-Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) for Dragonflight and later.
+Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.
 
-## Description
-Experiencer is a minimum configuration required experience bar addon. It adds multi purpose experience, reputation, artifact power, honor and conquest progress bar to the bottom or the top of the screen. The bar can also be split in up to three different sections to display multiple data sources simultaneously. 
+## General description
+Experiencer is a minimum configuration required experience bar addon. It tracks multiple progress bar options which can even be split up into three different sections to display multiple data sources simultaneously.
+The following options are supported:  
+- Experience  
+- Reputation (including Renown & Paragon support)  
+- Artifact power  
+- Honor  
+- Conquest  
 
-Note that because the Experiencer bar **can only be anchored to the top or the bottom of the screen** it may overlap with other frames positioned in those places.
+### Experience tracking
+Experiencer will display your current rested percentage and remaining exp (and percentage) required to level. The session values are saved even when you log out and can be reset from the experience options menu.
 
-When tracking experience the addon will display your current rested percentage, remaining xp required to level and percentage of the same value. Once you start gaining experience it will display the total sum gained during the active session, experience per hour value, estimated time and number of quests to level. Additionally the number of experience points player will gain after turning in all completed quests (and optionally incomplete quests) is displayed with an accompanying visualizer bar. Session values are saved even when you log out, to reset them you must do so from the options menu.
+The addon will track the following information per active session:  
+- Total exp sum gained.  
+- Experience per hour.  
+- Estimated time and number of quests to level.  
+  
+Additionally the total exp gained from turning in all completed quests (and optionally incomplete quests) is displayed by an accompanying visualizer bar.  
 
-Once you have reached the maximum level experiencer will change to displaying reputation progress. It displays the current level, reputation required to next level and percentage of the same value. By default the Experiencer will also attempt to automatically track the faction with whom you have last gained reputation.
+Once you have reached the maximum level, experiencer will change itself to displaying reputation progress.  
 
-If available Experiencer can also track artifact power, honor and conquest.  
-- Artifact power tracking will unlock after you gain the Heart of Azeroth.  
-- Conquest tracking unlocks at level 120.
+### Reputation tracking
+Experiencer will display your current level, reputation (and percentage) required to the next level. By default the addon will attempt to automatically track the faction you last gained reputation with.  
 
-**Note!** Experiencer will not hide the existing experience bar by Blizzard and you need to use a separate addon to do that. Usually an action bar replacement addon (Dominos or Bartender) will allow you to hide it and using one with this addon is recommended anyway.
+The addon is also capable of tracking the following reputation-related information:  
+- Reputations that work with renown levels.  
+- Your paragon level and if you have an active paragon cache.  
 
-By default the bar is colored the class color of the character you are playing but it can be changed in the options.
+### Artifact power tracking
+Experiencer is capable of tracking your artifact power, howeer do note you first need to unlock your Heart of Azeroth before this will work.  
 
-Experiencer also adds a DataBroker module that displays current text if you wish to place it elsewhere. To freely place it anywhere check out Sonaza's DataBroker display addon [Candy](https://www.curseforge.com/wow/addons/candy). In case Experiencer is split in to more than one section the left most bar will be used as the data source for DataBroker text.
+### Honor tracking
+Experiencer is capable of tracking your honor.  
+
+### Conquest tracking
+Experiencer is capable of tracking your Conquest, provided you are max level.  
 
 ### Usage and Shortcuts
 Experiencer options can be accessed by right clicking the bar or the DataBroker module. In order to make things smoother there are a few useful shortcuts.  
@@ -29,6 +47,17 @@ Experiencer options can be accessed by right clicking the bar or the DataBroker 
 - Holding control while scrolling with mouse wheel lets you browse through available bars in following order: experience, reputation, artifact power and honor.  
 - Shift left-click pastes current statistics to chat editbox. Shift control left-click for quick paste.  
 - **Reputation:** Holding shift while scrolling with mouse wheel over reputation bar will cycle through recent reputations.  
+
+## Notes
+Please keep the following in mind:  
+- Experiencer's bar can only be anchored **to the bottom or top of your screen**, which means it may overlap with other frames positioned in these places.  
+- Experiencer will not hide the existing experience bar by Blizzard, requiring a separate addon for this (Dominos, Bartender, ElvUI, etc...).
+- Experiencer's bar color is by default your current character's class color, this can be changed in the options.
+
+## Databroker
+Experiencer adds a DataBroker module that displays the current text if you wish to place it somewhere. 
+
+To freely place it anywhere, check out Sonaza's DataBroker display addon [Candy](https://www.curseforge.com/wow/addons/candy). In case Experiencer is split into more than one section the left most bar will be used as the data source for DataBroker text.
 
 ## Dependencies
 Experiencer uses Ace3, LibSharedMedia and LibDataBroker which are included in the /libs directory.
