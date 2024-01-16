@@ -1,3 +1,6 @@
+### 5.2.1
+* TOC bump
+
 ## 5.2.0
 * Add Paragon support for Renown reputations (fixes [#2](https://github.com/DJScias/Experiencer2/issues/2)).
 * Fix reputations prior to DF showing Exalted when they are actually Paragon.
