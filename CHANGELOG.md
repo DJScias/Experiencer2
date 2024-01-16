@@ -1,5 +1,8 @@
+### 5.2.2
+* Color picker updates (frame was overhauled and now includes a hex color input field).
+
 ### 5.2.1
-* TOC bump
+* TOC bump.
 
 ## 5.2.0
 * Add Paragon support for Renown reputations (fixes [#2](https://github.com/DJScias/Experiencer2/issues/2)).

@@ -1162,7 +1162,7 @@ function Addon:OpenContextMenu(anchorFrame, clickedModuleIndex)
 						info.r = self.db.global.Color.r;
 						info.g = self.db.global.Color.g;
 						info.b = self.db.global.Color.b;
-						OpenColorPicker(info);
+						ColorPickerFrame:SetupColorPickerAndShow(info);
 						CloseMenus();
 					end,
 					notCheckable = true,
