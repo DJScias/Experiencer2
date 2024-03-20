@@ -1,3 +1,6 @@
+### 5.2.3
+* TOC bump.
+
 ### 5.2.2
 * Color picker updates (frame was overhauled and now includes a hex color input field).
 
