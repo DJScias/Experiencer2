@@ -1,3 +1,6 @@
+### 5.2.4
+* 10.2.6 deprecates `IsRecruitAFriendLinked`, use `C_RecruitAFriend.IsRecruitAFriendLinked` instead to avoid errors throwing.
+
 ### 5.2.3
 * TOC bump.
 

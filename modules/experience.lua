@@ -458,7 +458,7 @@ function module:HasRecruitingBonus()
 	local playerLevel = UnitLevel("player");
 	
 	for index, unit in GroupIterator() do
-		if (not UnitIsUnit("player", unit) and UnitIsVisible(unit) and IsRecruitAFriendLinked(unit)) then
+		if (not UnitIsUnit("player", unit) and UnitIsVisible(unit) and C_RecruitAFriend.IsRecruitAFriendLinked(unit)) then
 			local unitLevel = UnitLevel(unit);
 			if (math.abs(playerLevel - unitLevel) <= 4 and playerLevel < 120) then
 				return true;
