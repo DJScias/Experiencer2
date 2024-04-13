@@ -815,11 +815,11 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[5] = colors[7], -- Journeyman
 			[6] = colors[8], -- Expert
 		}
-	elseif (friendshipFactionID == 2517 or friendshipFactionID == 2518) then -- Wrathion/Sabellian
+	elseif (friendshipFactionID == 2517 or friendshipFactionID == 2518) then -- Wrathion/Sabellian TO-DO: Confirm colors
 		friendshipColors = {
 			[1] = colors[4], -- Acquaintance
-			[2] = colors[5], -- Cohort
-			[3] = colors[6], -- Ally
+			[2] = colors[4], -- Cohort
+			[3] = colors[5], -- Ally
 			[4] = colors[6], -- Fang
 			[5] = colors[7], -- Friend
 			[6] = colors[8], -- True Friend
