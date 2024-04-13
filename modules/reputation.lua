@@ -825,21 +825,13 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[6] = colors[8], -- True Friend
 			[9] = colors[9], -- Paragon
 		}
-	elseif (friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553) then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi
+	elseif (friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553 or friendshipFactionID == 2550 or friendshipFactionID == 2615) then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi / Cobalt Assembly / Azerothian Archives
 		friendshipColors = {
-			[1] = colors[4], -- Neutral    -- Aspirational  -- Anomaly
-			[2] = colors[5], -- Preferred  -- Amateur       -- Future Friend
-			[3] = colors[6], -- Respected  -- Competent     -- Rift-Mender
-			[4] = colors[7], -- Valued     -- Skilled       -- Timewalker
-			[5] = colors[8], -- Esteemed   -- Professional  -- Legend
-		}
-	elseif (friendshipFactionID == 2550 or friendshipFactionID == 2615) then -- Cobalt Assembly / Azerothian Archives
-		friendshipColors = {
-			[1] = colors[4], -- Empty    	-- Junior
-			[2] = colors[5], -- Low      	-- Capable
-			[3] = colors[6], -- Medium   	-- Learned
-			[4] = colors[7], -- High    	-- Resident 
-			[5] = colors[8], -- Maximum  	-- Tenured
+			[1] = colors[4], -- Neutral    -- Aspirational  -- Anomaly                   -- Empty    -- Junior
+			[2] = colors[5], -- Preferred  -- Amateur       -- Future Friend             -- Low      -- Capable
+			[3] = colors[6], -- Respected  -- Competent     -- Rift Mender               -- Medium   -- Learned
+			[4] = colors[7], -- Valued     -- Skilled       -- Timewalker                -- High     -- Resident
+			[5] = colors[8], -- Esteemed   -- Professional  -- Legend of the Multiverse  -- Maximum  -- Tenured
 		}
 	end
 
