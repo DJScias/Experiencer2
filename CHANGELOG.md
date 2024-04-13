@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Changelog Updates (again.. oops!).
+
 ## [5.2.5] - 2024-04-13
 
 ### Changed
@@ -15,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.2.4] - 2024-04-07
 
-### Changed
+### Fixed
 
 - 10.2.6 deprecates `IsRecruitAFriendLinked`, use `C_RecruitAFriend.IsRecruitAFriendLinked` instead to avoid errors throwing.
 
@@ -43,10 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Paragon support for Renown reputations (fixes [#2](https://github.com/DJScias/Experiencer2/issues/2)).
 
-### Changed
+### Fixed
 
 - Fix reputations prior to DF showing Exalted when they are actually Paragon.
 - Potentially fix right-click error due to missing semicolon (fixes [#1](https://github.com/DJScias/Experiencer2/issues/1)).
+
+### Changed
+
 - Updated libraries.
 
 ## [5.1.2] - 2023-11-08
@@ -75,6 +84,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renown can be tracked.
 - Friendships can be tracked (Tillers, Sabellian/Wrathion, etc..)
 
-### Changed
+### Fixed
 
 - Right-click watch faction works again.
