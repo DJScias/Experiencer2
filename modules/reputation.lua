@@ -833,13 +833,13 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[4] = colors[7], -- Valued     -- Skilled       -- Timewalker
 			[5] = colors[8], -- Esteemed   -- Professional  -- Legend
 		}
-	elseif (friendshipFactionID == 2550 or friendshipFactionID == 2615) then -- Cobalt Assembly TO-DO: Confirm colors - Azerothian Archives TO-DO: Confirm colors
+	elseif (friendshipFactionID == 2550 or friendshipFactionID == 2615) then -- Cobalt Assembly / Azerothian Archives
 		friendshipColors = {
 			[1] = colors[4], -- Empty    	-- Junior
-			[2] = colors[4], -- Low      	-- Capable
-			[3] = colors[5], -- Medium   	-- Learned
-			[4] = colors[6], -- High    	-- Resident 
-			[5] = colors[7], -- Maximum  	-- Tenured
+			[2] = colors[5], -- Low      	-- Capable
+			[3] = colors[6], -- Medium   	-- Learned
+			[4] = colors[7], -- High    	-- Resident 
+			[5] = colors[8], -- Maximum  	-- Tenured
 		}
 	end
 
