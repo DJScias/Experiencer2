@@ -54,8 +54,23 @@ function Addon:GetPlayerClassColor()
 	return (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class or 'PRIEST'];
 end
 
-function Addon:GetBarColor()
-	if (self.db.global.Color.UseClassColor) then
+function Addon:SetReputationColor(colors)
+	self.db.global.Color.Rep.r = colors.r;
+	self.db.global.Color.Rep.g = colors.g;
+	self.db.global.Color.Rep.b = colors.b;
+	Addon:UpdateFrames();
+end
+
+function Addon:GetBarColor(bar)
+	bar = bar or "";
+
+	if (bar == "reputation" and self.db.global.Color.UseRepColor) then
+		return {
+			r = self.db.global.Color.Rep.r,
+			g = self.db.global.Color.Rep.g,
+			b = self.db.global.Color.Rep.b
+		};
+	elseif (self.db.global.Color.UseClassColor) then
 		return Addon:GetPlayerClassColor();
 	else
 		return {
@@ -91,6 +106,13 @@ function Addon:OnInitialize()
 				r = 1,
 				g = 1,
 				b = 1,
+
+				UseRepColor = false,
+				Rep = {
+					r = 1,
+					g = 1,
+					b = 1,
+				}
 			},
 			
 			SplitsTipShown = false,
@@ -399,10 +421,10 @@ function Addon:UpdateFrames()
 		moduleBar3:SetPoint("BOTTOMRIGHT", parentFrame, "BOTTOMRIGHT", 0, 0);
 	end
 	
-	local c = Addon:GetBarColor();
-	local ib = 1 - (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b); -- calculate inverse brightness
-	
-	for _, moduleFrame in Addon:GetModuleFrameIterator() do
+	for i, moduleFrame in Addon:GetModuleFrameIterator() do
+		local c = Addon:GetBarColor(self.db.char.ActiveModules[i]);
+		local ib = 1 - (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b); -- calculate inverse brightness
+
 		moduleFrame.main:SetStatusBarColor(c.r, c.g, c.b);
 		moduleFrame.main:SetAnimatedTextureColors(c.r, c.g, c.b);
 		
@@ -1022,7 +1044,7 @@ function Addon:OpenContextMenu(anchorFrame, clickedModuleIndex)
 			usedClassColor = self.db.global.Color.UseClassColor;
 			self.db.global.Color.UseClassColor = false;
 		end
-		
+
 		local r, g, b = ColorPickerFrame:GetColorRGB();
 		self.db.global.Color.r = r;
 		self.db.global.Color.g = g;
@@ -1041,7 +1063,7 @@ function Addon:OpenContextMenu(anchorFrame, clickedModuleIndex)
 		self.db.global.Color.b = values.b;
 		Addon:UpdateFrames();
 	end
-	
+
 	local numTotalEnabled = Addon:GetNumOfEnabledModules();
 	
 	local menudata = {
@@ -1172,6 +1194,15 @@ function Addon:OpenContextMenu(anchorFrame, clickedModuleIndex)
 					r = self.db.global.Color.r,
 					g = self.db.global.Color.g,
 					b = self.db.global.Color.b,
+				},
+				{
+					text = "Use reputation color",
+					func = function()
+						self.db.global.Color.UseRepColor = not self.db.global.Color.UseRepColor;
+						Addon:UpdateFrames();
+					end,
+					checked = function() return self.db.global.Color.UseRepColor; end,
+					isNotRadio = true,
 				},
 				{
 					text = " ", isTitle = true, notCheckable = true,

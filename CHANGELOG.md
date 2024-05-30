@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add support to have reputation bars use the current standing color.
+    - Can be enabled with `Use reputation color` in `Frame Options` (adds [#4](https://github.com/DJScias/Experiencer2/issues/4)).
+
 ## [5.2.6] - 2024-05-07
 
 ### Changed
