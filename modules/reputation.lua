@@ -114,7 +114,8 @@ function module:CanLevelUp()
 	return false;
 end
 
-function module:SetStanding(factionID, standing)
+function module:SetStanding(factionID)
+	local _, _, standing = GetFactionInfoByID(factionID);
 	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
 	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
 	
@@ -177,7 +178,7 @@ function module:GetText()
 	local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
 
 	local isCapped = false;
-	local standingText = module:SetStanding(factionID, standing);
+	local standingText = module:SetStanding(factionID);
 
 	if(majorFactionData) then
 		local renownLevelThreshold = majorFactionData.renownLevelThreshold;
@@ -894,7 +895,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 end
 
 function module:UPDATE_FACTION(event, ...)
-	local name, standing, _, _, _, factionID = GetWatchedFactionInfo();
+	local name, _, _, _, _, factionID = GetWatchedFactionInfo();
 	module.levelUpRequiresAction = (factionID and C_Reputation.IsFactionParagon(factionID));
 	
 	local instant = false;
@@ -904,7 +905,7 @@ function module:UPDATE_FACTION(event, ...)
 	end
 	module.Tracked = name;
 	
-	module:SetStanding(factionID, standing);
+	module:SetStanding(factionID);
 	module:Refresh(instant);
 end
 
