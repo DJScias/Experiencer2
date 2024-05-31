@@ -245,6 +245,14 @@ function Addon:GetProgressColor(progress)
 	return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255);
 end
 
+function Addon:FinishedProgressColor()
+	local r = 0
+	local g = 1;
+	local b = 1;
+	
+	return string.format("|cff%02x%02x%02x", r * 255, g * 255, b * 255);
+end
+
 local function UnitAuraByNameOrId(unit, aura_name_or_id, filter)
 	for index = 1, 40 do
 		local name, _, _, _, _, _, _, _, _, spell_id = UnitAura(unit, index, filter);

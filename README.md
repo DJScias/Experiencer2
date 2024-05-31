@@ -11,6 +11,7 @@ The following options are supported:
 - Artifact power  
 - Honor  
 - Conquest  
+- Threads (WoW Remix's Cloak)  
 
 ### Experience tracking
 Experiencer will display your current rested percentage and remaining exp (and percentage) required to level. The session values are saved even when you log out and can be reset from the experience options menu.
@@ -39,6 +40,11 @@ Experiencer is capable of tracking your honor.
 
 ### Conquest tracking
 Experiencer is capable of tracking your Conquest, provided you are max level.  
+
+### Thread tracking (WoW Remix's Cloak)
+Experiencer is capable of tracking your WoW Remix's Cloak of Infinite Potential threads:  
+- Tracks amount of total threads (and amount gained per session).  
+- Track remaining necessary threads for next "Infinite Power" level.  
 
 ### Usage and Shortcuts
 Experiencer options can be accessed by right clicking the bar or the DataBroker module. In order to make things smoother there are a few useful shortcuts.  

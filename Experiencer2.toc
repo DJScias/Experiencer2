@@ -4,7 +4,7 @@
 ## Author: DJScias (Original: Sonaza)
 ## Version: 5.2.6
 ## OptionalDeps: Ace3
-## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest
+## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest, ExperiencerDB_module_threads
 
 #@no-lib-strip@
 libs\LibStub\LibStub.lua
@@ -23,6 +23,7 @@ modules\reputation.lua
 modules\artifact.lua
 modules\honor.lua
 modules\conquest.lua
+modules\threads.lua
 events.lua
 databroker.lua
 Frame.xml

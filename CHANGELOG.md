@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add support to have reputation bars use the current standing color.
     - Can be enabled with `Use reputation color` in `Frame Options` (adds [#4](https://github.com/DJScias/Experiencer2/issues/4)).
+- Add support for threads of the WoW: Remix's `Cloak of Infinite Potential`.
+    - Tracks amount of total threads (and amount gained per session).
+    - Track remaining necessary threads for next "Infinite Power" level.
 
 ## [5.2.6] - 2024-05-07
 
