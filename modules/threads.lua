@@ -57,14 +57,14 @@ function module:IsDisabled()
 	return not module.hasCloak or not module.ready;
 end
 
-function module:PLAYER_LOGIN(event)
+function module:PLAYER_LOGIN()
 	-- Necessary for first time to wait with querying Threads until API is ready.
 	-- This function ensures we receive a valid thread count at login.
 
 	module:GetCloakInfo(true)
 end
 
-function module:UNIT_INVENTORY_CHANGED(event, unit)
+function module:UNIT_INVENTORY_CHANGED(_, unit)
 	if (unit ~= "player") then return end;
 
 	module:UpdateHasCloak();
@@ -82,7 +82,7 @@ function module:AllowedToBufferUpdate()
 	return true;
 end
 
-function module:Update(elapsed)
+function module:Update(_)
     if not self.db then return end;
 
     if self.db.global.KeepSessionData then
@@ -94,8 +94,8 @@ function module:Update(elapsed)
 end
 
 
-function module:OnMouseDown(button)
-	
+function module:OnMouseDown(_)
+
 end
 
 function module:CanLevelUp()
@@ -113,7 +113,7 @@ function module:GetText()
 	local threads, cloakLevel, cloakLevelText, cloakNext	= module:GetCloakInfo(false);
 
 	local remaining         								= cloakNext - threads;
-			
+
 	local progress          								= threads / cloakNext;
 	local progressColor     								= Addon:GetProgressColor(progress);
 	if cloakLevel == 12 then
@@ -121,7 +121,7 @@ function module:GetText()
 	end
 
 	if(self.db.global.ShowCloakLevel) then
-		tinsert(primaryText, 
+		tinsert(primaryText,
 			("|cffffd200Cloak Level|r %s"):format(cloakLevelText)
 		);
 	end
@@ -141,7 +141,7 @@ function module:GetText()
 			);
 		end
 	end
-	
+
 	if (module.session.GainedThreads > 0) then
 		if (self.db.global.ShowedGainedThreads) then
 			tinsert(secondaryText,
@@ -149,7 +149,7 @@ function module:GetText()
 			);
 		end
 	end
-	
+
 	return table.concat(primaryText, "  "), table.concat(secondaryText, "  ");
 end
 
@@ -160,11 +160,11 @@ end
 function module:GetChatMessage()
 	local threads, _, cloakLevelText, cloakNext	= module:GetCloakInfo(false);
 	local remaining         					= cloakNext - threads;
-					
+
 	local progress          					= threads / cloakNext;
 
 	local leveltext = ("Currently cloak level %s"):format(cloakLevelText);
-		
+
 	return ("%s at %s/%s (%d%%) with %s to go"):format(
 		leveltext,
 		BreakUpLargeNumbers(threads),
@@ -187,69 +187,44 @@ function module:GetBarData()
 	if (not module:IsDisabled()) then
 		data.current, data.level, _, data.max = module:GetCloakInfo(false);
 	end
-	
+
 	return data;
 end
 
-function module:GetOptionsMenu()
-	local menudata = {
-		{
-			text = "Cloak Thread Options",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = "Show remaining threads",
-			func = function() self.db.global.ShowRemaining = true; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == true; end,
-		},
-		{
-			text = "Show current and max threads",
-			func = function() self.db.global.ShowRemaining = false; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == false; end,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Show gained threads",
-			func = function() self.db.global.ShowedGainedThreads = not self.db.global.ShowedGainedThreads; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowedGainedThreads; end,
-			isNotRadio = true,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Remember session data",
-			func = function() self.db.global.KeepSessionData = not self.db.global.KeepSessionData; end,
-			checked = function() return self.db.global.KeepSessionData; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Reset session",
-			func = function()
-				module:ResetSession();
-			end,
-			notCheckable = true,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Show cloak level",
-			func = function() self.db.global.ShowCloakLevel = not self.db.global.ShowCloakLevel; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowCloakLevel; end,
-			isNotRadio = true,
-		},
-	};
-	
-	return menudata;
+function module:GetOptionsMenu(currentMenu)
+	currentMenu:CreateTitle("Cloak Thread Options");
+	currentMenu:CreateRadio("Show remaining threads", function() return self.db.global.ShowRemaining == true; end, function()
+		self.db.global.ShowRemaining = true;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+	currentMenu:CreateRadio("Show current and max threads", function() return self.db.global.ShowRemaining == false; end, function()
+		self.db.global.ShowRemaining = false;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Show gained threads", function() return self.db.global.ShowedGainedThreads; end, function()
+		self.db.global.ShowedGainedThreads = not self.db.global.ShowedGainedThreads;
+		module:RefreshText();
+	end);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Remember session data", function() return self.db.global.KeepSessionData; end, function() self.db.global.KeepSessionData = not self.db.global.KeepSessionData; end);
+	currentMenu:CreateButton("Reset session", function() module:ResetSession();	end):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Show cloak level", function() return self.db.global.ShowCloakLevel; end, function()
+		self.db.global.ShowCloakLevel = not self.db.global.ShowCloakLevel;
+		module:RefreshText();
+	end);
 end
 
 ------------------------------------------
 
-function module:CURRENCY_DISPLAY_UPDATE(event, currencyType, _, quantityChange)
+function module:CURRENCY_DISPLAY_UPDATE(_, currencyType, _, quantityChange)
 	if not currencyType then return end;
 
 	if currencyType == 3001 or (currencyType >= 2853 and currencyType <= 2860) then
@@ -265,7 +240,7 @@ function module:RestoreSession()
     if not self.db.char.session.Exists or not self.db.global.KeepSessionData then return end;
 
     local data = self.db.char.session;
-    
+
     module.session.LoginTime 		= module.session.LoginTime - data.Time;
     module.session.GainedThreads 	= data.TotalThreads;
 end
@@ -276,13 +251,13 @@ function module:ResetSession()
 		LoginTime		 = time(),
 		GainedThreads    = 0,
 	};
-	
+
 	self.db.char.session = {
 		Exists           = false,
 		Time             = 0,
 		TotalThreads     = 0,
 	};
-	
+
 	module:RefreshText();
 end
 
@@ -297,7 +272,7 @@ function module:GetCloakInfo(isInitialLogin)
 		threads = threads + C_CurrencyInfo.GetCurrencyInfo(2853 + c[i]).quantity;
 	end
 	GATHERED_THREADS = threads;
-	
+
 	local levels = {
 		{threshold = 4200, text = "XII", level = 12},
 		{threshold = 2200, text = "XI", level = 11},
@@ -312,7 +287,7 @@ function module:GetCloakInfo(isInitialLogin)
 		{threshold = 100, text = "II", level = 2},
 		{threshold = 40, text = "I", level = 1},
 	}
-	
+
 	for i, v in ipairs(levels) do
 		if GATHERED_THREADS > v.threshold then
 			cloakLevelText = v.text

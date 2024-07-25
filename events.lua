@@ -6,10 +6,9 @@
 ------------------------------------------------------------
 
 local ADDON_NAME, Addon = ...;
-local _;
 
 function Addon:PLAYER_REGEN_DISABLED()
-	CloseMenus();
+
 end
 
 function Addon:UNIT_AURA()
@@ -18,17 +17,17 @@ end
 
 local hiddenForPetBattle = false;
 
-function Addon:PET_BATTLE_OPENING_START(event)
+function Addon:PET_BATTLE_OPENING_START(_)
 	if(ExperiencerFrameBars:IsVisible()) then
 		hiddenForPetBattle = true;
 		Addon:HideBar();
 	end
 end
 
-function Addon:PET_BATTLE_CLOSE(event)
+function Addon:PET_BATTLE_CLOSE(_)
 	if(hiddenForPetBattle) then
 		Addon:ShowBar();
 	end
-	
+
 	hiddenForPetBattle = false;
 end

@@ -119,35 +119,20 @@ function module:GetBarData()
 	return data;
 end
 
-function module:GetOptionsMenu()
-	local menudata = {
-		{
-			text = "Honor Options",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = "Show remaining honor",
-			func = function() self.db.global.ShowRemaining = true; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == true; end,
-		},
-		{
-			text = "Show current and max honor",
-			func = function() self.db.global.ShowRemaining = false; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == false; end,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Show honor level",
-			func = function() self.db.global.ShowHonorLevel = not self.db.global.ShowHonorLevel; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowHonorLevel; end,
-			isNotRadio = true,
-		},
-	};
-	
-	return menudata;
+function module:GetOptionsMenu(currentMenu)
+	currentMenu:CreateTitle("Honor Options");
+	currentMenu:CreateRadio("Show remaining honor", function() return self.db.global.ShowRemaining == true; end, function()
+		self.db.global.ShowRemaining = true;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+	currentMenu:CreateRadio("Show current and max honor", function() return self.db.global.ShowRemaining == false; end, function()
+		self.db.global.ShowRemaining = false;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Show honor level", function() return self.db.global.ShowHonorLevel; end, function() self.db.global.ShowHonorLevel = not self.db.global.ShowHonorLevel; module:RefreshText(); end);
 end
 
 ------------------------------------------

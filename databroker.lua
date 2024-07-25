@@ -6,7 +6,6 @@
 ------------------------------------------------------------
 
 local ADDON_NAME, Addon = ...;
-local _;
 
 local LibDataBroker = LibStub("LibDataBroker-1.1");
 
@@ -15,9 +14,9 @@ local settings = {
 	label = "Experiencer",
 	text = "Experiencer Text Display",
 	icon = "Interface\\Icons\\Ability_Paladin_EmpoweredSealsRighteous",
-	OnClick = function(frame, button)
+	OnClick = function(_, button)
 		if(button == "RightButton") then
-			Addon:OpenContextMenu(frame);
+			Addon:OpenContextMenu();
 		end
 	end,
 };

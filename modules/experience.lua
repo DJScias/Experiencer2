@@ -6,7 +6,6 @@
 ------------------------------------------------------------
 
 local ADDON_NAME, Addon = ...;
-local _;
 
 local module = Addon:RegisterModule("experience", {
 	label       = "Experience",
@@ -247,115 +246,74 @@ function module:GetBarData()
 	data.max  	  = UnitXPMax("player");
 	data.current  = UnitXP("player");
 	data.rested   = (GetXPExhaustion() or 0);
-	
+
 	if (self.db.global.QuestXP.ShowVisualizer) then
 		local completeXP, incompleteXP, totalXP = module:CalculateQuestLogXP();
-		
+
 		data.visual = completeXP;
-		
+
 		if (self.db.global.QuestXP.AddIncomplete) then
 			data.visual = { completeXP, totalXP };
 		end
 	end
-	
+
 	return data;
 end
 
-function module:GetOptionsMenu()
-	local menudata = {
-		{
-			text = "Experience Options",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = "Show remaining XP",
-			func = function() self.db.global.ShowRemaining = true; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == true; end,
-		},
-		{
-			text = "Show current and max XP",
-			func = function() self.db.global.ShowRemaining = false; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == false; end,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Show gained XP",
-			func = function() self.db.global.ShowGainedXP = not self.db.global.ShowGainedXP; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowGainedXP; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Show XP per hour",
-			func = function() self.db.global.ShowHourlyXP = not self.db.global.ShowHourlyXP; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowHourlyXP; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Show time to level",
-			func = function() self.db.global.ShowTimeToLevel = not self.db.global.ShowTimeToLevel; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowTimeToLevel; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Show quests to level",
-			func = function() self.db.global.ShowQuestsToLevel = not self.db.global.ShowQuestsToLevel; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowQuestsToLevel; end,
-			isNotRadio = true,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Remember session data",
-			func = function() self.db.global.KeepSessionData = not self.db.global.KeepSessionData; end,
-			checked = function() return self.db.global.KeepSessionData; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Reset session",
-			func = function()
-				module:ResetSession();
-			end,
-			notCheckable = true,
-		},
-		{
-			text = " ", isTitle = true, notCheckable = true,
-		},
-		{
-			text = "Quest XP Visualizer",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = "Show completed quest XP",
-			func = function() self.db.global.QuestXP.ShowText = not self.db.global.QuestXP.ShowText; module:Refresh(); end,
-			checked = function() return self.db.global.QuestXP.ShowText; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Also show XP from incomplete quests",
-			func = function() self.db.global.QuestXP.AddIncomplete = not self.db.global.QuestXP.AddIncomplete; module:Refresh(); end,
-			checked = function() return self.db.global.QuestXP.AddIncomplete; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Include XP from account wide quests (pet battles)",
-			func = function() self.db.global.QuestXP.IncludeAccountWide = not self.db.global.QuestXP.IncludeAccountWide; module:Refresh(); end,
-			checked = function() return self.db.global.QuestXP.IncludeAccountWide; end,
-			isNotRadio = true,
-		},
-		{
-			text = "Display visualizer bar",
-			func = function() self.db.global.QuestXP.ShowVisualizer = not self.db.global.QuestXP.ShowVisualizer; module:Refresh(); end,
-			checked = function() return self.db.global.QuestXP.ShowVisualizer; end,
-			isNotRadio = true,
-		},
-	};
-	
-	return menudata;
+function module:GetOptionsMenu(currentMenu)
+	currentMenu:CreateTitle("Experience Options");
+	currentMenu:CreateRadio("Show remaining XP", function() return self.db.global.ShowRemaining == true; end, function()
+		self.db.global.ShowRemaining = true;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+	currentMenu:CreateRadio("Show current and max XP", function() return self.db.global.ShowRemaining == false; end, function()
+		self.db.global.ShowRemaining = false;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Show gained XP", function() return self.db.global.ShowGainedXP; end, function()
+		self.db.global.ShowGainedXP = not self.db.global.ShowGainedXP;
+		module:RefreshText();
+	end);
+	currentMenu:CreateCheckbox("Show XP per hour", function() return self.db.global.ShowHourlyXP; end, function()
+		self.db.global.ShowHourlyXP = not self.db.global.ShowHourlyXP;
+		module:RefreshText();
+	end);
+	currentMenu:CreateCheckbox("Show time to level", function() return self.db.global.ShowTimeToLevel; end, function()
+		self.db.global.ShowTimeToLevel = not self.db.global.ShowTimeToLevel;
+		module:RefreshText();
+	end);
+	currentMenu:CreateCheckbox("Show quests to level", function() return self.db.global.ShowQuestsToLevel; end, function()
+		self.db.global.ShowQuestsToLevel = not self.db.global.ShowQuestsToLevel;
+		module:RefreshText();
+	end);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateCheckbox("Remember session data", function() return self.db.global.KeepSessionData; end, function() self.db.global.KeepSessionData = not self.db.global.KeepSessionData; end);
+	currentMenu:CreateButton("Reset session", function() module:ResetSession();	end):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateDivider();
+
+	currentMenu:CreateTitle("Quest XP Visualizer");
+	currentMenu:CreateCheckbox("Show completed quest XP", function() return self.db.global.QuestXP.ShowText; end, function()
+		self.db.global.QuestXP.ShowText = not self.db.global.QuestXP.ShowText;
+		module:Refresh();
+	end);
+	currentMenu:CreateCheckbox("Also show XP from incomplete quests", function() return self.db.global.QuestXP.AddIncomplete; end, function()
+		self.db.global.QuestXP.AddIncomplete = not self.db.global.QuestXP.AddIncomplete;
+		module:Refresh();
+	end);
+	currentMenu:CreateCheckbox("Include XP from account wide quests (pet battles)", function() return self.db.global.QuestXP.IncludeAccountWide; end, function()
+		self.db.global.QuestXP.IncludeAccountWide = not self.db.global.QuestXP.IncludeAccountWide;
+		module:Refresh();
+	end);
+	currentMenu:CreateCheckbox("Display visualizer bar", function() return self.db.global.QuestXP.ShowVisualizer; end, function()
+		self.db.global.QuestXP.ShowVisualizer = not self.db.global.QuestXP.ShowVisualizer;
+		module:Refresh();
+	end);
 end
 
 ------------------------------------------
