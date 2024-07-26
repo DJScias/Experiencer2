@@ -21,6 +21,7 @@ It is possible more bugs might still linger, please do report them on the GitHub
 	to reliably show you all available reputations. We still do that, but now after the check we collapse them again.
 - New TWW menus. They look better, and I also made handling them a bit better, expect further updates still!
 - TOC bump.
+- Updated libraries.
 
 ### Fixed
 
