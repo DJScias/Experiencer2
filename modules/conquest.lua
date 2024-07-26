@@ -29,15 +29,15 @@ function module:Initialize()
 end
 
 function module:IsDisabled()
-	return GetMaxLevelForLatestExpansion() < (level or UnitLevel("player"));
+	return GetMaxLevelForLatestExpansion() < (CONQUEST_UNLOCK_LEVEL or UnitLevel("player"));
 end
 
 function module:AllowedToBufferUpdate()
 	return true;
 end
 
-function module:Update(elapsed)
-	
+function module:Update(_)
+
 end
 
 function module:GetConquestLevelInfo()
@@ -45,7 +45,7 @@ function module:GetConquestLevelInfo()
 	local quests = C_QuestLine.GetQuestLineQuests(CONQUEST_QUESTLINE_ID)
 	local currentQuestID = quests[1];
 	local stageIndex = 1;
-	for i, questID in ipairs(quests) do
+	for _, questID in ipairs(quests) do
 		if not C_QuestLog.IsQuestFlaggedCompleted(questID) and not C_QuestLog.IsOnQuest(questID) then
 			break;
 		end
@@ -75,8 +75,8 @@ function module:GetConquestLevelInfo()
 	return objectives[1].numFulfilled, objectives[1].numRequired, rewardItemID, stageIndex;
 end
 
-function module:OnMouseDown(button)
-	
+function module:OnMouseDown(_)
+
 end
 
 function module:CanLevelUp()
@@ -86,17 +86,17 @@ end
 
 function module:GetText()
 	local primaryText = {};
-	
-	local conquest, conquestMax, rewardID, stageIndex = module:GetConquestLevelInfo();
+
+	local conquest, conquestMax, _, stageIndex = module:GetConquestLevelInfo();
 	local remaining         = conquestMax - conquest;
-	
+
 	local progress          = conquest / (conquestMax > 0 and conquestMax or 1);
 	local progressColor     = Addon:GetProgressColor(progress);
-	
-	tinsert(primaryText, 
+
+	tinsert(primaryText,
 		("|cffffd200Conquest Stage|r %d"):format(stageIndex)
 	);
-	
+
 	if(self.db.global.ShowRemaining) then
 		tinsert(primaryText,
 			("%s%s|r (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(remaining), progressColor, 100 - progress * 100)
@@ -106,7 +106,7 @@ function module:GetText()
 			("%s%s|r / %s (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(conquest), BreakUpLargeNumbers(conquestMax), progressColor, progress * 100)
 		);
 	end
-	
+
 	return table.concat(primaryText, "  "), nil;
 end
 
@@ -115,16 +115,16 @@ function module:HasChatMessage()
 end
 
 function module:GetChatMessage()
-	local conquest, conquestMax, rewardID, stageIndex = module:GetConquestLevelInfo();
+	local conquest, conquestMax, _, stageIndex = module:GetConquestLevelInfo();
 	local remaining         = conquestMax - conquest;
-	
+
 	local progress          = conquest / (conquestMax > 0 and conquestMax or 1);
-	
+
 	local leveltext = ("Currently at stage %d"):format(stageIndex);
-	
+
 	return ("%s at %s/%s (%d%%) with %s to go"):format(
 		leveltext,
-		BreakUpLargeNumbers(conquest),	
+		BreakUpLargeNumbers(conquest),
 		BreakUpLargeNumbers(conquestMax),
 		math.ceil(progress * 100),
 		BreakUpLargeNumbers(remaining)
@@ -132,45 +132,31 @@ function module:GetChatMessage()
 end
 
 function module:GetBarData()
-	local conquest, conquestMax, rewardID, stageIndex = module:GetConquestLevelInfo();
-	local remaining         = conquestMax - conquest;
-	
-	local progress          = conquest / (conquestMax > 0 and conquestMax or 1);
-	local progressColor     = Addon:GetProgressColor(progress);
-	
+	local conquest, conquestMax, _, stageIndex = module:GetConquestLevelInfo();
+
 	local data    = {};
 	data.id       = nil;
 	data.level    = stageIndex;
-	
+
 	data.min  	  = 0;
 	data.max  	  = conquestMax;
 	data.current  = conquest;
-	
+
 	data.visual   = nil;
-	
+
 	return data;
 end
 
-function module:GetOptionsMenu()
-	local menudata = {
-		{
-			text = "Conquest Options",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = "Show remaining conquest",
-			func = function() self.db.global.ShowRemaining = true; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == true; end,
-		},
-		{
-			text = "Show current and max conquest",
-			func = function() self.db.global.ShowRemaining = false; module:RefreshText(); end,
-			checked = function() return self.db.global.ShowRemaining == false; end,
-		},
-	};
-	
-	return menudata;
+function module:GetOptionsMenu(currentMenu)
+	currentMenu:CreateTitle("Conquest Options");
+	currentMenu:CreateRadio("Show remaining conquest", function() return self.db.global.ShowRemaining == true; end, function()
+		self.db.global.ShowRemaining = true;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
+	currentMenu:CreateRadio("Show current and conquest", function() return self.db.global.ShowRemaining == false; end, function()
+		self.db.global.ShowRemaining = false;
+		module:RefreshText();
+	end):SetResponse(MenuResponse.Refresh);
 end
 
 ------------------------------------------

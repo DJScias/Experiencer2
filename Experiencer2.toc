@@ -1,8 +1,8 @@
-## Interface: 100207
+## Interface: 110000
 ## Title: Experiencer 2.0
-## Notes: Simple but advanced tracking progress bar addon
+## Notes: Simple but advanced tracking progress bar addon.
 ## Author: DJScias (Original: Sonaza)
-## Version: 5.3.0
+## Version: 6.0.0
 ## OptionalDeps: Ace3
 ## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest, ExperiencerDB_module_threads
 
@@ -13,7 +13,7 @@ libs\AceAddon-3.0\AceAddon-3.0.xml
 libs\AceDB-3.0\AceDB-3.0.xml
 libs\AceEvent-3.0\AceEvent-3.0.xml
 libs\AceHook-3.0\AceHook-3.0.xml
-libs\LibSharedMedia-3.0\LibSharedMedia-3.0.lua
+libs\LibSharedMedia-3.0\LibSharedMedia-3.0.xml
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
 #@end-no-lib-strip@
 

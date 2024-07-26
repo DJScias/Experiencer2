@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2024-07-26
+This release is mostly geared towards making Experiencer work with The War Within.
+It is possible more bugs might still linger, please do report them on the GitHub!
+
+### Added
+
+- Add reputation option "Auto switch bar to last gained reputation":
+    - This will automatically switch the Reputation bar to the last reputation you've gained reputation with.
+
+### Changed
+
+- Collapsed headers in the reputation panel should now persist.
+    - This was put in before I took over the addon, but apparently Experiencer uncollapsed all the headers to be able
+	to reliably show you all available reputations. We still do that, but now after the check we collapse them again.
+- New TWW menus. They look better, and I also made handling them a bit better, expect further updates still!
+- TOC bump.
+- Updated libraries.
+
+### Fixed
+
+- A lot of API deprecations involving TWW have been fixed.
+- Squashed reputation bugs with the new warband system and page rework.
+- Add safeguard for nil reputation color (fixes [#5](https://github.com/DJScias/Experiencer2/issues/5)).
+
 ## [5.3.0] - 2024-05-31
 
 ### Added
