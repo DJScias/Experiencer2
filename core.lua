@@ -55,33 +55,6 @@ function Addon:GetPlayerClassColor()
 	return (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class or 'PRIEST'];
 end
 
-function Addon:SetReputationColor(colors)
-	self.db.global.Color.Rep.r = colors.r;
-	self.db.global.Color.Rep.g = colors.g;
-	self.db.global.Color.Rep.b = colors.b;
-	Addon:UpdateFrames();
-end
-
-function Addon:GetBarColor(bar)
-	bar = bar or "";
-
-	if (bar == "reputation" and self.db.global.Color.UseRepColor) then
-		return {
-			r = self.db.global.Color.Rep.r,
-			g = self.db.global.Color.Rep.g,
-			b = self.db.global.Color.Rep.b
-		};
-	elseif (self.db.global.Color.UseClassColor) then
-		return Addon:GetPlayerClassColor();
-	else
-		return {
-			r = self.db.global.Color.r,
-			g = self.db.global.Color.g,
-			b = self.db.global.Color.b
-		};
-	end
-end
-
 function Addon:OnInitialize()
 	local defaults = {
 		char = {
@@ -136,6 +109,37 @@ function Addon:OnInitialize()
 			local newModule = Addon:FindValidModuleForBar(index);
 			Addon:SetModule(index, newModule.id, true);
 		end
+	end
+end
+
+
+function Addon:SetReputationColor(colors)
+	if not colors then
+		colors = {r=1.00, g=1.00, b=0.00};
+	end
+	self.db.global.Color.Rep.r = colors.r;
+	self.db.global.Color.Rep.g = colors.g;
+	self.db.global.Color.Rep.b = colors.b;
+	Addon:UpdateFrames();
+end
+
+function Addon:GetBarColor(bar)
+	bar = bar or "";
+
+	if (bar == "reputation" and self.db.global.Color.UseRepColor) then
+		return {
+			r = self.db.global.Color.Rep.r,
+			g = self.db.global.Color.Rep.g,
+			b = self.db.global.Color.Rep.b
+		};
+	elseif (self.db.global.Color.UseClassColor) then
+		return Addon:GetPlayerClassColor();
+	else
+		return {
+			r = self.db.global.Color.r,
+			g = self.db.global.Color.g,
+			b = self.db.global.Color.b
+		};
 	end
 end
 
@@ -1180,6 +1184,7 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 				module:GetOptionsMenu(moduleCheckbox);
 				moduleCheckbox:SetShouldRespondIfSubmenu(true);
 				moduleCheckbox:SetResponse(MenuResponse.CloseAll);
+				-- moduleCheckbox:SetResponse(MenuResponse.Close);
 			end
 		end
 	end);
