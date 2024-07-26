@@ -1,6 +1,6 @@
 ## Interface: 110000
 ## Title: Experiencer 2.0
-## Notes: Simple but advanced tracking progress bar addon
+## Notes: Simple but advanced tracking progress bar addon.
 ## Author: DJScias (Original: Sonaza)
 ## Version: 6.0.0
 ## OptionalDeps: Ace3
