@@ -89,7 +89,7 @@ function module:OnMouseWheel(delta)
 		if (not recentRepsList or #recentRepsList == 0) then return end
 
 		local currentIndex = 1;
-		local name = C_Reputation.GetWatchedFactionData().name;
+		local name = C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().name or nil;
 		if (name) then
 			currentIndex = module.recentReputations[name].sortedIndex;
 		end
@@ -105,7 +105,7 @@ function module:OnMouseWheel(delta)
 end
 
 function module:CanLevelUp()
-	local factionID = C_Reputation.GetWatchedFactionData().factionID;
+	local factionID = C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().factionID or nil;
 	if (factionID and C_Reputation.IsFactionParagon(factionID)) then
 		local _, _, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID);
 		return hasRewardPending;
