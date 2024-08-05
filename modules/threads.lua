@@ -54,7 +54,7 @@ function module:Initialize()
 end
 
 function module:IsDisabled()
-	return not module.hasCloak or not module.ready;
+	return not PlayerGetTimerunningSeasonID() or not module.hasCloak or not module.ready;
 end
 
 function module:PLAYER_LOGIN()
