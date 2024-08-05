@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Add reputation option "Clear recent reputations":
+    - This will clear your recent reputations list in case it has grown too considerably.
+
+### Changed
+
+- Rework the Watched Faction and Recent Reputations menus.
+    - This has no tangible end-user changes.
+
 ## [6.0.1] - 2024-08-04
 
 ### Fixed

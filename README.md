@@ -1,6 +1,7 @@
 # Experiencer 2.0
 Experience bar replacement for World of Warcraft.
 
+Currently supports: The War Within 11.0.0.  
 Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.
 
 ## General description
