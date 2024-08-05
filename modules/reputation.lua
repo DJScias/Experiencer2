@@ -49,7 +49,7 @@ function module:Initialize()
 	local factionData = C_Reputation.GetWatchedFactionData();
 	module.Tracked = factionData and factionData.name;
 
-	if (factionData and factionData.name) then
+	if factionData and factionData.name then
 		module.recentReputations[factionData.name] = {
 			factionID = factionData.factionID,
 			amount = 0,
@@ -84,21 +84,21 @@ function module:GetSortedRecentList()
 end
 
 function module:OnMouseWheel(delta)
-	if (IsShiftKeyDown()) then
+	if IsShiftKeyDown() then
 		local recentRepsList = module:GetSortedRecentList();
-		if (not recentRepsList or #recentRepsList == 0) then return end
+		if not recentRepsList or #recentRepsList == 0 then return end
 
 		local currentIndex = 1;
 		local name = C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().name or nil;
-		if (name) then
+		if name then
 			currentIndex = module.recentReputations[name].sortedIndex;
 		end
 
 		currentIndex = currentIndex - delta;
-		if (currentIndex > #recentRepsList) then currentIndex = 1 end
-		if (currentIndex < 1) then currentIndex = #recentRepsList end
+		if currentIndex > #recentRepsList then currentIndex = 1 end
+		if currentIndex < 1 then currentIndex = #recentRepsList end
 
-		if (recentRepsList[currentIndex]) then
+		if recentRepsList[currentIndex] then
 			module:MenuSetWatchedFactionID(recentRepsList[currentIndex].factionID);
 		end
 	end
@@ -106,7 +106,7 @@ end
 
 function module:CanLevelUp()
 	local factionID = C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().factionID or nil;
-	if (factionID and C_Reputation.IsFactionParagon(factionID)) then
+	if factionID and C_Reputation.IsFactionParagon(factionID) then
 		local _, _, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID);
 		return hasRewardPending;
 	end
@@ -122,12 +122,12 @@ function module:SetStanding(factionID)
 	local standingColor = {};
 	local isCapped = false;
 
-	if (majorFactionData) then
+	if majorFactionData then
 		isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
 
 		standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
 		standingColor = {r=0.00, g=0.80, b=1.00};
-	elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+	elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 		isCapped = not reputationInfo.nextThreshold;
 
 		standingText, standingColor = module:GetFriendShipColorText(reputationInfo.friendshipFactionID, reputationInfo.reaction);
@@ -137,13 +137,13 @@ function module:SetStanding(factionID)
 		standingText, standingColor = module:GetStandingColorText(standing);
 	end
 
-	if ((isCapped and C_Reputation.IsFactionParagon(factionID)) or C_Reputation.IsFactionParagon(factionID)) then
+	if isCapped and C_Reputation.IsFactionParagon(factionID) or C_Reputation.IsFactionParagon(factionID) then
 		local currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 		isCapped = false;
 
 		local paragonLevel = math.floor(currentReputation / maxReputation);
 
-		if (paragonLevel > 1) then
+		if paragonLevel > 1 then
 			standingText, standingColor = string.format("%dx %s", paragonLevel, module:GetStandingColorText(9));
 		else
 			standingText, standingColor = module:GetStandingColorText(9);
@@ -155,7 +155,7 @@ function module:SetStanding(factionID)
 end
 
 function module:GetText()
-	if (not module:HasWatchedReputation()) then
+	if not module:HasWatchedReputation() then
 		return "No active watched reputation";
 	end
 
@@ -167,7 +167,7 @@ function module:GetText()
 	local isCapped = false;
 	local standingText = module:SetStanding(factionID);
 
-	if (majorFactionData) then
+	if majorFactionData then
 		isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
 	else
 		if (reputationInfo and reputationInfo.friendshipFactionID > 0) then
@@ -185,9 +185,8 @@ function module:GetText()
 	local isParagon = false;
 	local paragonLevel = 0;
 
-	if ((isCapped and C_Reputation.IsFactionParagon(factionID)) or C_Reputation.IsFactionParagon(factionID)) then
+	if isCapped and C_Reputation.IsFactionParagon(factionID) or C_Reputation.IsFactionParagon(factionID) then
 		currentReputation, maxReputation, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID);
-		minReputation = 0;
 		isCapped = false;
 		isParagon = true;
 
@@ -195,18 +194,18 @@ function module:GetText()
 		currentReputation = currentReputation % maxReputation;
 
 		remainingReputation = maxReputation - currentReputation;
-	elseif (not isCapped) then
+	elseif not isCapped then
 		remainingReputation = maxReputation - currentReputation;
 		realCurrentReputation = currentReputation - minReputation;
 		realMaxReputation = maxReputation - minReputation;
-		if (majorFactionData) then
+		if majorFactionData then
 			local renownReputationEarned = majorFactionData.renownReputationEarned;
 			local renownLevelThreshold = majorFactionData.renownLevelThreshold;
 
 			remainingReputation = renownLevelThreshold - renownReputationEarned;
 			realCurrentReputation = renownReputationEarned;
 			realMaxReputation = renownLevelThreshold;
-		elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+		elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 			local friendStanding = reputationInfo.standing;
 			local friendThreshold = reputationInfo.reactionThreshold;
 			local nextFriendThreshold = reputationInfo.nextThreshold;
@@ -225,8 +224,8 @@ function module:GetText()
 
 	local primaryText = {};
 
-	if (not isCapped) then
-		if (self.db.global.ShowRemaining) then
+	if not isCapped then
+		if self.db.global.ShowRemaining then
 			tinsert(primaryText,
 				string.format("%s (%s): %s%s|r (%s%.1f|r%%)", name, standingText, color, BreakUpLargeNumbers(remainingReputation), color, 100 - progress * 100)
 			);
@@ -237,7 +236,7 @@ function module:GetText()
 		end
 	end
 
-	if (isCapped) then
+	if isCapped then
 		tinsert(primaryText,
 			string.format("%s (%s)", name, standingText)
 		);
@@ -245,12 +244,12 @@ function module:GetText()
 
 	local secondaryText = {};
 
-	if (hasRewardPending) then
+	if hasRewardPending then
 		tinsert(secondaryText, "|cnGREEN_FONT_COLOR:Paragon reward earned!|r");
 	end
 
-	if (self.db.global.ShowGainedRep and module.recentReputations[name]) then
-		if (module.recentReputations[name].amount > 0) then
+	if self.db.global.ShowGainedRep and module.recentReputations[name] then
+		if module.recentReputations[name].amount > 0 then
 			tinsert(secondaryText, string.format("+%s |cnNORMAL_FONT_COLOR:rep|r", BreakUpLargeNumbers(module.recentReputations[name].amount)));
 		end
 	end
@@ -271,10 +270,10 @@ function module:GetChatMessage()
 	local standingText = "";
 	local isCapped = false;
 
-	if (majorFactionData) then
+	if majorFactionData then
 		standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
 		isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
-	elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+	elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 		standingText = reputationInfo.reaction;
 		isCapped = not reputationInfo.nextThreshold;
 	else
@@ -284,26 +283,26 @@ function module:GetChatMessage()
 
 	local paragonLevel = 0;
 
-	if ((isCapped and C_Reputation.IsFactionParagon(factionID)) or C_Reputation.IsFactionParagon(factionID)) then
+	if isCapped and C_Reputation.IsFactionParagon(factionID) or C_Reputation.IsFactionParagon(factionID) then
 		currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 		minReputation = 0;
 		isCapped = false;
 
 		paragonLevel = math.floor(currentReputation / maxReputation);
-		if (paragonLevel < 1) then
+		if paragonLevel < 1 then
 			paragonLevel = 1;
 		end
 		currentReputation = currentReputation % maxReputation;
 	end
 
-	if (not isCapped) then
+	if not isCapped then
 		local remaining_rep = maxReputation - currentReputation;
-		if (majorFactionData) then
+		if majorFactionData then
 			local renownLevelThreshold = majorFactionData.renownLevelThreshold;
 			local renownReputationEarned = majorFactionData.renownReputationEarned;
 
 			remaining_rep = renownLevelThreshold - renownReputationEarned;
-		elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+		elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 			local friendStanding = reputationInfo.standing;
 			local nextFriendThreshold = reputationInfo.nextThreshold;
 
@@ -312,7 +311,7 @@ function module:GetChatMessage()
 		local progress = (currentReputation - minReputation) / (maxReputation - minReputation);
 
 		local paragonText = "";
-		if (paragonLevel > 0) then
+		if paragonLevel > 0 then
 			paragonText = string.format(" (%dx paragon)", paragonLevel);
 		end
 
@@ -343,7 +342,7 @@ function module:GetBarData()
 	data.rested   = nil;
 	data.visual   = nil;
 
-	if (module:HasWatchedReputation()) then
+	if module:HasWatchedReputation() then
 		local factionData = C_Reputation.GetWatchedFactionData();
 		local factionID, standing, minReputation, maxReputation, currentReputation = factionData.factionID, factionData.reaction, factionData.currentReactionThreshold, factionData.nextReactionThreshold, factionData.currentStanding;
 		data.id = factionID;
@@ -354,18 +353,18 @@ function module:GetBarData()
 		local isCapped = false;
 		local isParagon = false;
 
-		if (majorFactionData) then
+		if majorFactionData then
 			minReputation = 0;
 			isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
 		else
-			if (reputationInfo and reputationInfo.friendshipFactionID > 0 and not reputationInfo.nextThreshold) then
+			if reputationInfo and reputationInfo.friendshipFactionID > 0 and not reputationInfo.nextThreshold then
 				isCapped = true;
-			elseif (standing == MAX_REPUTATION_REACTION) then
+			elseif standing == MAX_REPUTATION_REACTION then
 				isCapped = true;
 			end
 		end
 
-		if ((isCapped and C_Reputation.IsFactionParagon(factionID)) or C_Reputation.IsFactionParagon(factionID)) then
+		if isCapped and C_Reputation.IsFactionParagon(factionID) or C_Reputation.IsFactionParagon(factionID) then
 			currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 			isCapped = false;
 			isParagon = true;
@@ -376,7 +375,7 @@ function module:GetBarData()
 
 		data.level       = standing;
 
-		if (not isCapped) then
+		if not isCapped then
 			data.min  	 = minReputation;
 			data.max  	 = maxReputation;
 			data.current = currentReputation;
@@ -477,7 +476,7 @@ function module:GetFactionActive(givenFactionID)
 		local factionData = C_Reputation.GetFactionDataByIndex(numFactions);
 		local factionID, isHeader, isCollapsed = factionData.factionID, factionData.isHeader, factionData.isCollapsed;
 
-		if (factionID == 0 and isHeader and isCollapsed) then
+		if factionID == 0 and isHeader and isCollapsed then
 			inactiveCollapsed = true;
 			C_Reputation.ExpandFactionHeader(numFactions);
 			numFactions = C_Reputation.GetNumFactions();
@@ -494,7 +493,7 @@ function module:GetFactionActive(givenFactionID)
 	if inactiveCollapsed then
 		for factionIndex = numFactions, 1, -1 do
 			local factionID = C_Reputation.GetFactionDataByIndex(factionIndex).factionID;
-			if (factionID == 0) then
+			if factionID == 0 then
 				C_Reputation.CollapseFactionHeader(factionIndex);
 			end
 		end
@@ -512,7 +511,7 @@ function module:GetFactionIDByName(factionName)
 
 	while factionIndex <= numFactions do
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
-		local factionID, name, standing, isHeader, isCollapsed, hasRep, isWatched, isChild = factionData.factionID, factionData.name, factionData.reaction, factionData.isHeader, factionData.isCollapsed, factionData.isHeaderWithRep, factionData.isWatched, factionData.isChild;
+		local factionID, name, isHeader, isCollapsed = factionData.factionID, factionData.name, factionData.isHeader, factionData.isCollapsed;
 		-- Don't count inactive reps.
 		if factionID == 0 then
 			break;
@@ -523,7 +522,7 @@ function module:GetFactionIDByName(factionName)
 				break;
 			end
 
-			if (isHeader and isCollapsed) then
+			if isHeader and isCollapsed then
 				C_Reputation.ExpandFactionHeader(factionIndex);
 				tinsert(collapsedHeaders, factionData.factionID);
 				numFactions = C_Reputation.GetNumFactions();
@@ -561,7 +560,7 @@ function module:GetRecentReputationsMenu()
 			local factionData = C_Reputation.GetFactionDataByID(data.factionID);
 			local standing, isHeader, hasRep, isWatched = factionData.reaction, factionData.isHeader, factionData.isHeaderWithRep, factionData.isWatched;
 
-			if (not isHeader or hasRep) then
+			if not isHeader or hasRep then
 				local standing_text = "";
 				local majorFactionData = C_MajorFactions.GetMajorFactionData(data.factionID);
 				local reputationInfo = C_GossipInfo.GetFriendshipReputation(data.factionID);
@@ -584,7 +583,7 @@ function module:GetRecentReputationsMenu()
 		end
 	end
 
-	if (#recentRepsList == 0) then
+	if #recentRepsList == 0 then
 		return false;
 	end
 
@@ -592,11 +591,11 @@ function module:GetRecentReputationsMenu()
 end
 
 function module:GetReputationProgressByFactionID(factionID)
-	if (not factionID) then return nil end
+	if not factionID then return nil end
 
 	local factionData = C_Reputation.GetFactionDataByID(factionID);
 	local name, standing, minReputation, maxReputation, currentReputation = factionData.name, factionData.reaction, factionData.currentReactionThreshold, factionData.nextReactionThreshold, factionData.currentStanding;
-	if (not name or not minReputation or not maxReputation) then return nil end
+	if not name or not minReputation or not maxReputation then return nil end
 
 	-- Friendships
 	local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
@@ -607,11 +606,11 @@ function module:GetReputationProgressByFactionID(factionID)
 	local isCapped = false;
 	local isParagon = false;
 
-	if (majorFactionData) then
+	if majorFactionData then
 		minReputation = 0;
-		if (not majorFactionData.renownLevelThreshold) then
+		if not majorFactionData.renownLevelThreshold then
 			isCapped = true; -- This will never trigger for now, Renown does not get capped.
-		elseif (C_Reputation.IsFactionParagon(factionID)) then
+		elseif C_Reputation.IsFactionParagon(factionID) then
 			currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 			isParagon = true;
 			currentReputation = currentReputation % maxReputation;
@@ -619,11 +618,11 @@ function module:GetReputationProgressByFactionID(factionID)
 			currentReputation = majorFactionData.renownReputationEarned;
 			maxReputation = majorFactionData.renownLevelThreshold;
 		end
-	elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+	elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 		local friendStanding = reputationInfo.standing;
 		local friendThreshold = reputationInfo.reactionThreshold;
 		local nextFriendThreshold = reputationInfo.nextThreshold;
-		if (not nextFriendThreshold) then
+		if not nextFriendThreshold then
 			isCapped = true;
 		else
 			minReputation = friendThreshold;
@@ -631,8 +630,8 @@ function module:GetReputationProgressByFactionID(factionID)
 			maxReputation = nextFriendThreshold;
 		end
 	else
-		if (standing == MAX_REPUTATION_REACTION) then
-			if (C_Reputation.IsFactionParagon(factionID)) then
+		if standing == MAX_REPUTATION_REACTION then
+			if C_Reputation.IsFactionParagon(factionID) then
 				currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 				isParagon = true;
 				minReputation = 0;
@@ -644,6 +643,51 @@ function module:GetReputationProgressByFactionID(factionID)
 	end
 
 	return currentReputation - minReputation, maxReputation - minReputation, isCapped, isParagon;
+end
+
+function module:CreateRecentReputationsMenu(currentMenu, recents)
+	for _, recentsInfo in ipairs(recents) do
+		if recentsInfo.isRecentTitle then
+			currentMenu:CreateTitle(recentsInfo.name);
+		elseif recentsInfo.isRecentFaction then
+			currentMenu:CreateRadio(recentsInfo.name, function() return recentsInfo.isWatched; end, function()
+				module:MenuSetWatchedFactionID(recentsInfo.factionID);
+			end);
+		end
+	end
+	currentMenu:CreateButton("Clear recent reputations", function() wipe(module.recentReputations); end);
+end
+
+function module:CreateWatchedFactionSubMenu(subMenu, factionInfo)
+	subMenu:CreateTitle(factionInfo.menuList[1].name);
+	tremove(factionInfo.menuList, 1);
+	for _, faction in ipairs(factionInfo.menuList) do
+		local factionOption;
+
+		if faction.isHeader then
+			factionOption = subMenu:CreateButton(faction.name);
+			module:CreateWatchedFactionSubMenu(factionOption, faction);
+		else
+			factionOption = subMenu:CreateRadio(faction.name, function() return faction.isWatched; end, function()
+				module:MenuSetWatchedFactionID(faction.factionID);
+			end);
+		end
+
+		if faction.isHeaderWithRep then
+			factionOption:SetShouldRespondIfSubmenu(true);
+			factionOption:SetResponse(MenuResponse.CloseAll);
+			module:CreateWatchedFactionSubMenu(factionOption, faction);
+		end
+	end
+end
+
+function module:CreateWatchedFactionsMenu(currentMenu, factions)
+	for _, faction in ipairs(factions) do
+		if faction.isMajorHeader then
+			local majorHeader = currentMenu:CreateButton(faction.name);
+			module:CreateWatchedFactionSubMenu(majorHeader, faction);
+		end
+	end
 end
 
 function module:GetReputationsMenu(currentMenu)
@@ -665,7 +709,7 @@ function module:GetReputationsMenu(currentMenu)
 		end
 		if name then
 			local progressText = "";
-			if (factionID) then
+			if factionID then
 				local currentRep, nextThreshold, isCapped, isParagon = module:GetReputationProgressByFactionID(factionID);
 				if (isParagon) then
 					standing = 9;
@@ -678,7 +722,7 @@ function module:GetReputationsMenu(currentMenu)
 
 			local standingText = "";
 
-			if (not isHeader or hasRep) then
+			if not isHeader or hasRep then
 				local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
 				local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
 				if (majorFactionData and standing ~= 9) then
@@ -690,19 +734,19 @@ function module:GetReputationsMenu(currentMenu)
 				end
 			end
 
-			if (isHeader and isCollapsed) then
+			if isHeader and isCollapsed then
 				C_Reputation.ExpandFactionHeader(factionIndex);
 				tinsert(collapsedHeaders, factionData.factionID);
 				numFactions = C_Reputation.GetNumFactions();
 			end
 
-			if (isHeader and isChild and current) then -- Second tier header
-				if (depth == 2) then
+			if isHeader and isChild and current then -- Second tier header
+				if depth == 2 then
 					current = previous;
 					previous = nil;
 				end
 
-				if (not hasRep) then
+				if not hasRep then
 					tinsert(current, {
 						name = name,
 						isHeader = true,
@@ -727,7 +771,7 @@ function module:GetReputationsMenu(currentMenu)
 
 				depth = 2
 
-			elseif (isHeader) then -- First tier header
+			elseif isHeader then -- First tier header
 				tinsert(factions, {
 					name = name,
 					isMajorHeader = true;
@@ -741,7 +785,7 @@ function module:GetReputationsMenu(currentMenu)
 				})
 
 				depth = 1
-			elseif (not isHeader) then -- First and second tier faction
+			elseif not isHeader then -- First and second tier faction
 				tinsert(current, {
 					name = string.format("%s (%s)%s", name, standingText, progressText),
 					isFaction = true,
@@ -754,61 +798,13 @@ function module:GetReputationsMenu(currentMenu)
 		factionIndex = factionIndex + 1;
 	end
 
-	local recent = module:GetRecentReputationsMenu();
-	if (recent ~= false) then
-		for _, data in ipairs(recent) do tinsert(factions, data) end
-	end
-
 	module:CloseCollapsedHeaders(collapsedHeaders);
-	-- DevTools_Dump(factions);
-	-- Basic TWW menu support
-	-- TO:DO Write this better, this was quickly written to not break TWW.
-	for _, faction in ipairs(factions) do
-		if faction.isMajorHeader then
-			local majorHeader = currentMenu:CreateButton(faction.name);
+	module:CreateWatchedFactionsMenu(currentMenu, factions);
 
-			for _, subMenu in ipairs(faction.menuList) do
-				if subMenu.isMajorHeaderTitle then
-					majorHeader:CreateTitle(subMenu.name);
-				elseif subMenu.isHeaderWithRep then
-					local headerWithRep = majorHeader:CreateRadio(subMenu.name, function() return subMenu.isWatched; end, function()
-						module:MenuSetWatchedFactionID(subMenu.factionID);
-					end);
-					headerWithRep:SetShouldRespondIfSubmenu(true);
-					headerWithRep:SetResponse(MenuResponse.CloseAll);
-					for _, nestedSubMenu in ipairs(subMenu.menuList) do
-						if nestedSubMenu.isSubMenuTitle then
-							headerWithRep:CreateTitle(nestedSubMenu.name);
-						elseif nestedSubMenu.isFaction then
-							headerWithRep:CreateRadio(nestedSubMenu.name, function() return nestedSubMenu.isWatched; end, function()
-								module:MenuSetWatchedFactionID(nestedSubMenu.factionID);
-							end);
-						end
-					end
-				elseif subMenu.isHeader then
-					local header = majorHeader:CreateButton(subMenu.name);
-					for _, nestedSubMenu in ipairs(subMenu.menuList) do
-						if nestedSubMenu.isSubMenuTitle then
-							header:CreateTitle(nestedSubMenu.name);
-						elseif nestedSubMenu.isFaction then
-							header:CreateRadio(nestedSubMenu.name, function() return nestedSubMenu.isWatched; end, function()
-								module:MenuSetWatchedFactionID(nestedSubMenu.factionID);
-							end);
-						end
-					end
-				elseif subMenu.isFaction then
-					majorHeader:CreateRadio(subMenu.name, function() return subMenu.isWatched; end, function()
-						module:MenuSetWatchedFactionID(subMenu.factionID);
-					end);
-				end
-			end
-		elseif faction.isRecentTitle then
-			currentMenu:CreateTitle(faction.name);
-		elseif faction.isRecentFaction then
-			currentMenu:CreateRadio(faction.name, function() return faction.isWatched; end, function()
-				module:MenuSetWatchedFactionID(faction.factionID);
-			end);
-		end
+	local recent = module:GetRecentReputationsMenu();
+	if recent ~= false then
+		currentMenu:CreateDivider();
+		module:CreateRecentReputationsMenu(currentMenu, recent);
 	end
 
 	currentMenu:CreateDivider();
@@ -874,7 +870,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 		[9] = colors[9], -- Paragon
 	}
 
-	if (friendshipFactionID == 1374 or friendshipFactionID == 1419 or friendshipFactionID == 1690 or friendshipFactionID == 1691 or friendshipFactionID == 2010 or friendshipFactionID == 2011) then -- Brawlers S1-S3
+	if friendshipFactionID == 1374 or friendshipFactionID == 1419 or friendshipFactionID == 1690 or friendshipFactionID == 1691 or friendshipFactionID == 2010 or friendshipFactionID == 2011 then -- Brawlers S1-S3
 		friendshipColors = {
 			[1] = colors[5], -- Rank 1
 			[2] = colors[5], -- Rank 2
@@ -887,7 +883,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[9] = colors[5], -- Rank 9
 			[10] = colors[5], -- Rank 10
 		}
-	elseif (friendshipFactionID == 2371 or friendshipFactionID == 2372) then -- Brawlers S4/Current
+	elseif friendshipFactionID == 2371 or friendshipFactionID == 2372 then -- Brawlers S4/Current
 		friendshipColors = {
 			[1] = colors[5], -- Rank 1
 			[2] = colors[5], -- Rank 2
@@ -898,7 +894,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[7] = colors[5], -- Rank 7
 			[8] = colors[5], -- Rank 8
 		}
-	elseif (friendshipFactionID == 2135) then -- Chromie
+	elseif friendshipFactionID == 2135 then -- Chromie
 		friendshipColors = {
 			[1] = colors[4], -- Whelpling
 			[2] = colors[4], -- Temporal Trainee
@@ -908,7 +904,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[6] = colors[7], -- Epoch-Mender
 			[7] = colors[8], -- Timelord
 		}
-	elseif (friendshipFactionID == 1357) then -- Nomi
+	elseif friendshipFactionID == 1357 then -- Nomi
 		friendshipColors = {
 			[1] = colors[4], -- Apprentice
 			[2] = colors[4], -- Apprentice
@@ -917,7 +913,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[5] = colors[7], -- Journeyman
 			[6] = colors[8], -- Expert
 		}
-	elseif (friendshipFactionID == 2517 or friendshipFactionID == 2518) then -- Wrathion/Sabellian TO-DO: Confirm colors
+	elseif friendshipFactionID == 2517 or friendshipFactionID == 2518 then -- Wrathion/Sabellian TO-DO: Confirm colors
 		friendshipColors = {
 			[1] = colors[4], -- Acquaintance
 			[2] = colors[4], -- Cohort
@@ -927,7 +923,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[6] = colors[8], -- True Friend
 			[9] = colors[9], -- Paragon
 		}
-	elseif (friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553 or friendshipFactionID == 2550 or friendshipFactionID == 2615) then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi / Cobalt Assembly / Azerothian Archives
+	elseif friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553 or friendshipFactionID == 2550 or friendshipFactionID == 2615 then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi / Cobalt Assembly / Azerothian Archives
 		friendshipColors = {
 			[1] = colors[4], -- Neutral    -- Aspirational  -- Anomaly                   -- Empty    -- Junior
 			[2] = colors[5], -- Preferred  -- Amateur       -- Future Friend             -- Low      -- Capable
@@ -937,7 +933,7 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 		}
 	end
 
-	if (friendshipColors[standingLevel] == nil) then
+	if friendshipColors[standingLevel] == nil then
 		return string.format('|cff%02x%02x%02x%s|r',
 		colors[5].r * 255,
 		colors[5].g * 255,
@@ -977,19 +973,19 @@ function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
 	local reputation, amount = message:match(reputationPattern);
 	amount = tonumber(amount) or 0;
 
-	if (not reputation or not module.recentReputations) then return end
+	if not reputation or not module.recentReputations then return end
 
 	local isGuild = false;
-	if (reputation == GUILD) then
+	if reputation == GUILD then
 		isGuild = true;
 
 		local guildName = GetGuildInfo("player");
-		if (guildName) then
+		if guildName then
 			reputation = guildName;
 		end
 	end
 
-	if (not module.recentReputations[reputation]) then
+	if not module.recentReputations[reputation] then
 		module.recentReputations[reputation] = {
 			amount = 0,
 			factionID = module:GetFactionIDByName(reputation),
@@ -1024,23 +1020,23 @@ function module:AllowedToBufferUpdate()
 end
 
 function module:Update(elapsed)
-	if (module.AutoWatchUpdate == 1) then
-		if (module.AutoWatchRecentTimeout > 0.0) then
+	if module.AutoWatchUpdate == 1 then
+		if module.AutoWatchRecentTimeout > 0.0 then
 			module.AutoWatchRecentTimeout = module.AutoWatchRecentTimeout - elapsed;
 		end
 
-		if (module.AutoWatchRecentTimeout <= 0.0) then
+		if module.AutoWatchRecentTimeout <= 0.0 then
 			local selectedFaction = nil;
 			local largestGain = 0;
 			for faction, gain in pairs(module.AutoWatchRecent) do
-				if (gain > largestGain) then
+				if gain > largestGain then
 					selectedFaction = faction;
 					largestGain = gain;
 				end
 			end
 
 			local factionData = C_Reputation.GetWatchedFactionData();
-			if (selectedFaction ~= factionData.name) then
+			if selectedFaction ~= factionData.name then
 				module:MenuSetWatchedFactionID(factionData.factionID);
 				module.AutoWatchUpdate = 2;
 			else
