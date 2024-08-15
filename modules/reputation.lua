@@ -99,7 +99,8 @@ function module:OnMouseWheel(delta)
 		if currentIndex < 1 then currentIndex = #recentRepsList end
 
 		if recentRepsList[currentIndex] then
-			module:MenuSetWatchedFactionID(recentRepsList[currentIndex].factionID);
+			local data =recentRepsList[currentIndex].data;
+			module:MenuSetWatchedFactionID(data.factionID);
 		end
 	end
 end
