@@ -1,8 +1,9 @@
 # Experiencer 2.0
-Experience bar replacement for World of Warcraft.
+Experience bar replacement for World of Warcraft.  
+Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.  
 
+Available on [CurseForge](https://www.curseforge.com/wow/addons/experiencer-2-0) and [Wago.io](https://addons.wago.io/addons/experiencer2)!  
 Currently supports: The War Within 11.0.2.  
-Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.
 
 ## General description
 Experiencer is a minimum configuration required experience bar addon. It tracks multiple progress bar options which can even be split up into three different sections to display multiple data sources simultaneously.
