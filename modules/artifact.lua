@@ -115,7 +115,7 @@ function module:GetArtifactName()
 
 	local itemID = HEART_OF_AZEROTH_ITEM_ID;
 
-	local name = C_Item.GetItemInfo(itemID).itemName;
+	local name = C_Item.GetItemInfo(itemID) and C_Item.GetItemInfo(itemID).itemName;
 	if (not name) then
 		self:RegisterEvent("GET_ITEM_INFO_RECEIVED");
 	else
@@ -136,7 +136,7 @@ function module:GetText()
 	local remaining         = data.max - data.current;
 	local progress          = data.current / data.max;
 	local progressColor     = Addon:GetProgressColor(progress);
-	local name = module:GetArtifactName();
+	local name 				= module:GetArtifactName();
 
 	tinsert(primaryText,
 		("|cffffecB3%s|r (Level %d):"):format(name or "", data.level)
