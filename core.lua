@@ -1054,7 +1054,11 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 	local numTotalEnabled = Addon:GetNumOfEnabledModules();
 
 	MenuUtil.CreateContextMenu(UIParent, function(_, rootDescription)
-		rootDescription:CreateTitle("Experiencer Options");
+		local title = rootDescription:CreateTitle("Experiencer Options");
+		title:SetTooltip(function(tooltip, elementDescription)
+			GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+			GameTooltip_AddNormalLine(tooltip, "Version: " .. C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"));
+		end);
 		rootDescription:CreateButton(("%s bar"):format(self.db.char.Visible and "Hide" or "Show"), function() Addon:ToggleVisibility(); end);
 		local flashOption = rootDescription:CreateCheckbox("Flash when able to level up", function() return self.db.char.FlashLevelUp; end, function()
 			self.db.char.FlashLevelUp = not self.db.char.FlashLevelUp;
