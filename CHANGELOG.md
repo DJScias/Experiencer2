@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [6.1.0] - 2024-08-15
 
 ### Added
 
@@ -14,8 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- TOC bump.
 - Rework the Watched Faction and Recent Reputations menus.
     - This has no tangible end-user changes.
+
+### Fixed
+
+- Feed correct data into recent reputations list (fixes [#9](https://github.com/DJScias/Experiencer2/issues/9)).
+- Fix errors regarding retrieving artifact info (Heart of Azeroth).
 
 ## [6.0.1] - 2024-08-04
 
