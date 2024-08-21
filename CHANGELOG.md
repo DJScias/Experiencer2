@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added WoWInterface to the BigWigs Packager.
 
+### Changed
+- `Cloak Threads` option has been disabled with the end of World of Warcraft Remix: Mists of Pandaria.
+    - The bar will display "no cloak" and can be switched away from, but it can no longer be selected in the menu.
+
 ## [6.1.3] - 2024-08-17
 
 ### Fixed

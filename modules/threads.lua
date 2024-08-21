@@ -10,6 +10,7 @@ local ADDON_NAME, Addon = ...;
 local module = Addon:RegisterModule("threads", {
 	label       = "Cloak Threads",
 	order       = 6,
+	active      = false,
 	savedvars   = {
 		char = {
 			session = {

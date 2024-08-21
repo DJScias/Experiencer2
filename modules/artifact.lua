@@ -10,6 +10,7 @@ local ADDON_NAME, Addon = ...;
 local module = Addon:RegisterModule("artifact", {
 	label       = "Artifact",
 	order       = 3,
+	active      = true,
 	savedvars   = {
 		global = {
 			ShowRemaining = true,

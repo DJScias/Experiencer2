@@ -10,6 +10,7 @@ local ADDON_NAME, Addon = ...;
 local module = Addon:RegisterModule("experience", {
 	label       = "Experience",
 	order       = 1,
+	active      = true,
 	savedvars   = {
 		char = {
 			session = {

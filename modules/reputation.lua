@@ -11,6 +11,7 @@ local _;
 local module = Addon:RegisterModule("reputation", {
 	label 	    = "Reputation",
 	order       = 2,
+	active      = true,
 	savedvars   = {
 		global = {
 			ShowRemaining = true,

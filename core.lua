@@ -1167,28 +1167,30 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 		for _, module in pairs(Addon.orderedModules) do
 			local menutext = module.label;
 
-			if (module:IsDisabled()) then
-				menutext = string.format("%s |cnGRAY_FONT_COLOR:(inactive)|r", menutext);
-			elseif (self.db.char.ActiveModules[clickedModuleIndex] == module.id) then
-				menutext = string.format("%s |cnGREEN_FONT_COLOR:(current)|r", menutext);
-			end
-
-			local moduleCheckbox = rootDescription:CreateCheckbox(menutext, function()
-				for i=1, self.db.char.NumSplits do
-					if (self.db.char.ActiveModules[i] == module.id) then
-						return true;
-					end
+			if module.active then
+				if (module:IsDisabled()) then
+					menutext = string.format("%s |cnGRAY_FONT_COLOR:(inactive)|r", menutext);
+				elseif (self.db.char.ActiveModules[clickedModuleIndex] == module.id) then
+					menutext = string.format("%s |cnGREEN_FONT_COLOR:(current)|r", menutext);
 				end
-				return false;
-			end, function() Addon:SetModule(clickedModuleIndex, module.id); end);
 
-			if module:IsDisabled() then
-				moduleCheckbox:SetEnabled(false);
-			else
-				module:GetOptionsMenu(moduleCheckbox);
-				moduleCheckbox:SetShouldRespondIfSubmenu(true);
-				moduleCheckbox:SetResponse(MenuResponse.CloseAll);
-				-- moduleCheckbox:SetResponse(MenuResponse.Close);
+				local moduleCheckbox = rootDescription:CreateCheckbox(menutext, function()
+					for i=1, self.db.char.NumSplits do
+						if (self.db.char.ActiveModules[i] == module.id) then
+							return true;
+						end
+					end
+					return false;
+				end, function() Addon:SetModule(clickedModuleIndex, module.id); end);
+
+				if module:IsDisabled() then
+					moduleCheckbox:SetEnabled(false);
+				else
+					module:GetOptionsMenu(moduleCheckbox);
+					moduleCheckbox:SetShouldRespondIfSubmenu(true);
+					moduleCheckbox:SetResponse(MenuResponse.CloseAll);
+					-- moduleCheckbox:SetResponse(MenuResponse.Close);
+				end
 			end
 		end
 	end);

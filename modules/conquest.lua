@@ -10,6 +10,7 @@ local ADDON_NAME, Addon = ...;
 local module = Addon:RegisterModule("conquest", {
 	label       = "Conquest",
 	order       = 5,
+	active      = true,
 	savedvars   = {
 		global = {
 			ShowRemaining  = true,

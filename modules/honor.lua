@@ -10,6 +10,7 @@ local ADDON_NAME, Addon = ...;
 local module = Addon:RegisterModule("honor", {
 	label       = "Honor",
 	order       = 4,
+	active      = true,
 	savedvars   = {
 		global = {
 			ShowHonorLevel  = true,
