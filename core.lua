@@ -983,30 +983,17 @@ function Addon:SetSplits(newSplits)
 	Addon:RefreshText();
 end
 
-function Addon:GenerateFontsMenu(currentMenu, fontsList, startIndex, maxElements)
-	local fontsAdded = 1;
-	local numFonts = #fontsList;
+function Addon:GenerateFontsMenu(currentMenu)
+	local sharedFonts = LibSharedMedia:List("font");
+	local numFonts = #sharedFonts;
 
-	for index = startIndex, numFonts do
-		local font = fontsList[index];
+	for index = 1, numFonts do
+		local font = sharedFonts[index];
 		currentMenu:CreateRadio(font, function() return self.db.global.FontFace == font; end, function()
 			self.db.global.FontFace = font;
 			Addon:UpdateFrames();
 		end);
-
-		fontsAdded = fontsAdded + 1;
-		if (fontsAdded > maxElements and index < numFonts) then
-			local subMenu = currentMenu:CreateButton("|cnNORMAL_FONT_COLOR:More|r");
-			Addon:GenerateFontsMenu(subMenu, fontsList, index+1, maxElements);
-			break;
-		end
 	end
-end
-
-function Addon:GetSharedFonts(initialMenu, maxElements)
-	local sharedFonts = LibSharedMedia:List("font");
-
-	Addon:GenerateFontsMenu(initialMenu, sharedFonts, 1, maxElements);
 end
 
 function Addon:GetFontScaleMenu(currentMenu)
@@ -1089,11 +1076,11 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 		frameOptions:CreateDivider();
 		frameOptions:CreateTitle("Font");
 		local fontFaceOption = frameOptions:CreateButton(string.format("Font face |cnGREEN_FONT_COLOR:(%s)|r", self.db.global.FontFace));
-		-- local optionHeight = 20; -- 20 is default
+		local optionHeight = 20; -- 20 is default
 		local maxElements = 30;
-		-- local maxScrollExtent = optionHeight * maxElements;
-		Addon:GetSharedFonts(fontFaceOption, maxElements);
-		-- fontFaceOption:SetScrollMode(maxScrollExtent);
+		local maxScrollExtent = optionHeight * maxElements;
+		Addon:GenerateFontsMenu(fontFaceOption);
+		fontFaceOption:SetScrollMode(maxScrollExtent);
 
 		Addon:GetFontScaleMenu(frameOptions);
 

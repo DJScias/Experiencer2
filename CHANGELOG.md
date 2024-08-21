@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - `Cloak Threads` option has been disabled with the end of World of Warcraft Remix: Mists of Pandaria.
     - The bar will display "no cloak" and can be switched away from, but it can no longer be selected in the menu.
+- Frame `Font face` dropdown now scrolls instead of being multiple `More` dropdowns (11.0.2 fixed this).
 
 ## [6.1.3] - 2024-08-17
 
