@@ -2,7 +2,7 @@
 Experience bar replacement for World of Warcraft.  
 Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.  
 
-Available on [CurseForge](https://www.curseforge.com/wow/addons/experiencer-2-0) and [Wago.io](https://addons.wago.io/addons/experiencer2)!  
+Available on [CurseForge](https://www.curseforge.com/wow/addons/experiencer-2-0), [Wago.io](https://addons.wago.io/addons/experiencer2) and [WoWInterface](https://www.wowinterface.com/downloads/fileinfo.php?id=26805)!  
 Currently supports: The War Within 11.0.2.  
 
 ## General description
