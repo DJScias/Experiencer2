@@ -44,6 +44,7 @@ Experiencer is capable of tracking your honor.
 Experiencer is capable of tracking your Conquest, provided you are max level.  
 
 ### Thread tracking (WoW Remix's Cloak)
+**Now disabled with Remix's end.**  
 Experiencer is capable of tracking your WoW Remix's Cloak of Infinite Potential threads:  
 - Tracks amount of total threads (and amount gained per session).  
 - Track remaining necessary threads for next "Infinite Power" level.  
