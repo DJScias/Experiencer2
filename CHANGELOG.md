@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.5] - 2024-08-22
+
+### Changed
+- Updated the Experience code, plus some general clean-up.
+    - Added Guild Banner Standards and Draught of Ten Lands as EXP modifiers.
+	- Potential fix for updating expansion level (only on xpac change).
+
+### Fixed
+- LibSharedMedia-3.0 libraries were loaded wrongly - again.
+- Removed a leaky global (no end-user changes).
+
 ## [6.1.4] - 2024-08-21
 
 ### Added
