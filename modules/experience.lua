@@ -27,7 +27,7 @@ local module = Addon:RegisterModule("experience", {
 			ShowTimeToLevel = true,
 			ShowQuestsToLevel = true,
 			KeepSessionData = true,
-			
+
 			QuestXP = {
 				ShowText = true,
 				AddIncomplete = false,
@@ -43,10 +43,10 @@ module.session = {
 	GainedXP        = 0,
 	LastXP          = UnitXP("player"),
 	MaxXP           = UnitXPMax("player"),
-	
+
 	QuestsToLevel   = -1,
 	AverageQuestXP  = 0,
-	
+
 	Paused          = false,
 	PausedTime      = 0,
 };
@@ -60,7 +60,7 @@ local HEIRLOOM_ITEMXP = {
 	["INVTYPE_LEGS"] 		= 0.1,
 	["INVTYPE_FINGER"] 		= 0.05,
 	["INVTYPE_CLOAK"] 		= 0.05,
-	
+
 	-- Rings with battleground xp bonus instead
 	[126948] 	= 0.0,
 	[126949]	= 0.0,
@@ -71,10 +71,14 @@ local HEIRLOOM_SLOTS = {
 };
 
 local BUFF_MULTIPLIERS = {
-	[46668]		= { multiplier = 0.1, }, -- Darkmoon Carousel Buff
-	[178119] 	= { multiplier = 0.2, }, -- Excess Potion of Accelerated Learning
-	[127250]	= { multiplier = 3.0, maxlevel = 84, }, -- Elixir of Ancient Knowledge
-	[189375]	= { multiplier = 3.0, maxlevel = 99, }, -- Elixir of the Rapid Mind
+	[46668]		= { multiplier = 0.1, },	-- Darkmoon Carousel Buff
+	[89479]		= { multiplier = 0.05, },	-- Guild Battle Standard - 1 - A
+	[90631]		= { multiplier = 0.05, },	-- Guild Battle Standard - 1 - H
+	[90626]		= { multiplier = 0.1, },	-- Guild Battle Standard - 2 - A
+	[90632]		= { multiplier = 0.1, },	-- Guild Battle Standard - 2 - H
+	[90628]		= { multiplier = 0.15, },	-- Guild Battle Standard - 3 - A
+	[90633]		= { multiplier = 0.15, },	-- Guild Battle Standard - 3 - H
+	[289982]	= { multiplier = 0.1, },	-- Draught of Ten Lands
 };
 
 local GROUP_TYPE = {
@@ -93,9 +97,9 @@ function module:Initialize()
 	self:RegisterEvent("QUEST_LOG_UPDATE");
 	self:RegisterEvent("UNIT_INVENTORY_CHANGED");
 	self:RegisterEvent("UPDATE_EXPANSION_LEVEL");
-	
+
 	module.playerCanLevel = not module:IsPlayerMaxLevel();
-	
+
 	module:RestoreSession();
 end
 
@@ -110,25 +114,25 @@ end
 function module:Update(elapsed)
 	local lastPaused = self.session.Paused;
 	self.session.Paused = UnitIsAFK("player");
-	
+
 	if (self.session.Paused and lastPaused ~= self.session.Paused) then
 		self:Refresh();
 	elseif (not self.session.Paused and lastPaused ~= self.session.Paused) then
 		self.session.LoginTime = self.session.LoginTime + math.floor(self.session.PausedTime);
 		self.session.PausedTime = 0;
 	end
-	
+
 	if (self.session.Paused) then
 		self.session.PausedTime = self.session.PausedTime + elapsed;
 	end
-	
+
 	if (self.db == nil) then
 		return;
 	end
-	
+
 	if (self.db.global.KeepSessionData) then
 		self.db.char.session.Exists = true;
-		
+
 		self.db.char.session.Time = time() - (self.session.LoginTime + math.floor(self.session.PausedTime));
 		self.db.char.session.TotalXP = self.session.GainedXP;
 		self.db.char.session.AverageQuestXP = self.session.AverageQuestXP;
@@ -138,14 +142,14 @@ end
 function module:GetText()
 	local primaryText = {};
 	local secondaryText = {};
-	
+
 	local current_xp, max_xp    = UnitXP("player"), UnitXPMax("player");
 	local rested_xp             = GetXPExhaustion() or 0;
 	local remaining_xp          = max_xp - current_xp;
-	
+
 	local progress              = current_xp / (max_xp > 0 and max_xp or 1);
 	local progressColor         = Addon:GetProgressColor(progress);
-	
+
 	if (self.db.global.ShowRemaining) then
 		tinsert(primaryText,
 			string.format("%s%s|r (%s%.1f|r%%)", progressColor, BreakUpLargeNumbers(remaining_xp), progressColor, 100 - progress * 100)
@@ -155,35 +159,35 @@ function module:GetText()
 			string.format("%s%s|r / %s (%s%.1f|r%%)", progressColor, BreakUpLargeNumbers(current_xp), BreakUpLargeNumbers(max_xp), progressColor, progress * 100)
 		);
 	end
-	
+
 	if (rested_xp > 0) then
 		tinsert(primaryText,
 			string.format("%d%% |cff6fafdfrested|r", math.ceil(rested_xp / max_xp * 100))
 		);
 	end
-	
+
 	if (module.session.GainedXP > 0) then
 		local hourlyXP, timeToLevel = module:CalculateHourlyXP();
-		
+
 		if (self.db.global.ShowGainedXP) then
 			tinsert(secondaryText,
 				string.format("+%s |cffffcc00xp|r", BreakUpLargeNumbers(module.session.GainedXP))
 			);
 		end
-		
+
 		if (self.db.global.ShowHourlyXP) then
 			tinsert(primaryText,
 				string.format("%s |cffffcc00xp/h|r", BreakUpLargeNumbers(hourlyXP))
 			);
 		end
-		
+
 		if (self.db.global.ShowTimeToLevel) then
 			tinsert(primaryText,
 				string.format("%s |cff80e916until level|r", Addon:FormatTime(timeToLevel))
 			);
 		end
 	end
-	
+
 	if (self.db.global.ShowQuestsToLevel) then
 		if (module.session.QuestsToLevel > 0 and module.session.QuestsToLevel ~= math.huge) then
 			tinsert(secondaryText,
@@ -191,15 +195,15 @@ function module:GetText()
 			);
 		end
 	end
-	
+
 	if (self.db.global.QuestXP.ShowText) then
 		local completeXP, incompleteXP, totalXP = module:CalculateQuestLogXP();
-		
+
 		local levelUpAlert = "";
 		if (current_xp + completeXP >= max_xp) then
 			levelUpAlert = " (|cfff1e229enough to level|r)";
 		end
-		
+
 		if (not self.db.global.QuestXP.AddIncomplete) then
 			tinsert(secondaryText,
 				string.format("%s |cff80e916xp from quests|r%s", BreakUpLargeNumbers(math.floor(completeXP)), levelUpAlert)
@@ -210,7 +214,7 @@ function module:GetText()
 			);
 		end
 	end
-	
+
 	return table.concat(primaryText, "  "), table.concat(secondaryText, "  ");
 end
 
@@ -224,7 +228,7 @@ function module:GetChatMessage()
 	local rested_xp = GetXPExhaustion() or 0;
 
 	local rested_xp_percent = floor(((rested_xp / max_xp) * 100) + 0.5);
-	
+
 	local max_xp_text = Addon:FormatNumber(max_xp);
 	local current_xp_text = Addon:FormatNumber(current_xp);
 	local remaining_xp_text = Addon:FormatNumber(remaining_xp);
@@ -323,13 +327,13 @@ function module:RestoreSession()
 	if (not self.db.char.session.Exists) then return end
 	if (not self.db.global.KeepSessionData) then return end
 	if (module:IsPlayerMaxLevel()) then return end
-	
+
 	local data = self.db.char.session;
-	
+
 	module.session.LoginTime        = module.session.LoginTime - data.Time;
 	module.session.GainedXP         = data.TotalXP;
 	module.session.AverageQuestXP   = module.session.AverageQuestXP;
-	
+
 	if (module.session.AverageQuestXP > 0) then
 		local remaining_xp = UnitXPMax("player") - UnitXP("player");
 		module.session.QuestsToLevel = ceil(remaining_xp / module.session.AverageQuestXP);
@@ -342,21 +346,21 @@ function module:ResetSession()
 		GainedXP         = 0,
 		LastXP           = UnitXP("player"),
 		MaxXP            = UnitXPMax("player"),
-		
+
 		AverageQuestXP   = 0,
 		QuestsToLevel    = -1,
-		
+
 		Paused           = false,
 		PausedTime       = 0,
 	};
-	
+
 	self.db.char.session = {
 		Exists           = false,
 		Time             = 0,
 		TotalXP          = 0,
 		AverageQuestXP   = 0,
 	};
-	
+
 	module:RefreshText();
 end
 
@@ -366,15 +370,15 @@ end
 
 function module:CalculateHourlyXP()
 	local hourlyXP, timeToLevel = 0, 0;
-	
+
 	local logged_time = time() - (module.session.LoginTime + math.floor(module.session.PausedTime));
 	local coeff = logged_time / 3600;
-	
+
 	if (coeff > 0 and module.session.GainedXP > 0) then
 		hourlyXP = math.ceil(module.session.GainedXP / coeff);
 		timeToLevel = (UnitXPMax("player") - UnitXP("player")) / hourlyXP * 3600;
 	end
-	
+
 	return hourlyXP, timeToLevel;
 end
 
@@ -384,7 +388,7 @@ function module:GetGroupType()
 	elseif (IsInGroup()) then
 		return GROUP_TYPE.PARTY;
 	end
-	
+
 	return GROUP_TYPE.SOLO;
 end
 
@@ -395,7 +399,7 @@ function module:GetUnitID(group_type, index)
 	elseif (group_type == GROUP_TYPE.RAID) then
 		return string.format("raid%d", index);
 	end
-	
+
 	return nil;
 end
 
@@ -404,7 +408,7 @@ local function GroupIterator()
 	local groupType = module:GetGroupType();
 	local numGroupMembers = GetNumGroupMembers();
 	if (groupType == GROUP_TYPE.SOLO) then numGroupMembers = 1 end
-	
+
 	return function()
 		index = index + 1;
 		if (index <= numGroupMembers) then
@@ -415,8 +419,8 @@ end
 
 function module:HasRecruitingBonus()
 	local playerLevel = UnitLevel("player");
-	
-	for index, unit in GroupIterator() do
+
+	for _, unit in GroupIterator() do
 		if (not UnitIsUnit("player", unit) and UnitIsVisible(unit) and C_RecruitAFriend.IsRecruitAFriendLinked(unit)) then
 			local unitLevel = UnitLevel(unit);
 			if (math.abs(playerLevel - unitLevel) <= 4 and playerLevel < 120) then
@@ -424,35 +428,35 @@ function module:HasRecruitingBonus()
 			end
 		end
 	end
-	
+
 	return false;
 end
 
 function module:CalculateXPMultiplier()
 	local multiplier = 1.0;
-	
+
 	-- Heirloom xp bonus is now factored in quest log
 	--for _, slotID in ipairs(HEIRLOOM_SLOTS) do
 	--	local link = GetInventoryItemLink("player", slotID);
-		
+
 	--	if (link) then
 	--		local _, _, itemRarity, _, _, _, _, _, itemEquipLoc = GetItemInfo(link);
-			
+
 	--		if (itemRarity == 7) then
 	--			local itemID = tonumber(strmatch(link, "item:(%d*)")) or 0;
 	--			local itemMultiplier = HEIRLOOM_ITEMXP[itemID] or HEIRLOOM_ITEMXP[itemEquipLoc];
-				
+
 	--			multiplier = multiplier + itemMultiplier;
 	--		end
 	--	end
 	--end
-	
+
 	if (module:HasRecruitingBonus()) then
 		multiplier = math.max(1.5, multiplier);
 	end
-	
+
 	local playerLevel = UnitLevel("player");
-	
+
 	for buffSpellID, buffMultiplier in pairs(BUFF_MULTIPLIERS) do
 		if (Addon:PlayerHasBuff(buffSpellID)) then
 			if (not buffMultiplier.maxlevel or (buffMultiplier.maxlevel and playerLevel <= buffMultiplier.maxlevel)) then
@@ -460,7 +464,7 @@ function module:CalculateXPMultiplier()
 			end
 		end
 	end
-	
+
 	return multiplier;
 end
 
@@ -483,15 +487,15 @@ function module:CalculateQuestLogXP()
 			completeXP = completeXP + GetQuestLogRewardXP(questID);
 		else
 			incompleteXP = incompleteXP + GetQuestLogRewardXP(questID);
- 		end
+		end
 	until true end
-	
+
 	local multiplier = module:CalculateXPMultiplier();
 	return completeXP * multiplier, incompleteXP * multiplier, (completeXP + incompleteXP) * multiplier;
 end
 
 function module:UPDATE_EXPANSION_LEVEL()
-	if (not playerCanLevel and not module:IsPlayerMaxLevel()) then
+	if (not module.playerCanLevel and not module:IsPlayerMaxLevel()) then
 		DEFAULT_CHAT_FRAME:AddMessage(("|cfffaad07Experiencer|r %s"):format("Expansion level upgraded, you are able to gain experience again."));
 	end
 	module.playerCanLevel = not module:IsPlayerMaxLevel();
@@ -501,42 +505,41 @@ function module:QUEST_LOG_UPDATE()
 	module:Refresh(true);
 end
 
-function module:UNIT_INVENTORY_CHANGED(event, unit)
+function module:UNIT_INVENTORY_CHANGED(_, unit)
 	if (unit ~= "player") then return end
 	module:Refresh();
 end
 
-function module:CHAT_MSG_SYSTEM(event, msg)
+function module:CHAT_MSG_SYSTEM(_, msg)
 	if (msg:match(QUEST_COMPLETED_PATTERN) ~= nil) then
 		module.QuestCompleted = true;
 		return;
 	end
-	
+
 	if (not module.QuestCompleted) then return end
 	module.QuestCompleted = false;
-	
+
 	local xp_amount = msg:match(QUEST_EXPERIENCE_PATTERN);
-	
+
 	if (xp_amount ~= nil) then
 		xp_amount = tonumber(xp_amount);
-		
-		local weigth = 0.5;
+
 		if (module.session.AverageQuestXP > 0) then
-			weigth = math.min(xp_amount / module.session.AverageQuestXP, 0.9);
+			local weigth = math.min(xp_amount / module.session.AverageQuestXP, 0.9);
 			module.session.AverageQuestXP = module.session.AverageQuestXP * (1.0 - weigth) + xp_amount * weigth;
 		else
 			module.session.AverageQuestXP = xp_amount;
 		end
-		
+
 		if (module.session.AverageQuestXP ~= 0) then
 			local remaining_xp = UnitXPMax("player") - UnitXP("player");
 			module.session.QuestsToLevel = math.floor(remaining_xp / module.session.AverageQuestXP);
-			
+
 			if (module.session.QuestsToLevel > 0 and xp_amount > 0) then
 				local quests_text = string.format("%d more quests to level", module.session.QuestsToLevel);
-				
+
 				DEFAULT_CHAT_FRAME:AddMessage("|cffffff00" .. quests_text .. ".|r");
-				
+
 				if (Parrot) then
 					Parrot:ShowMessage(quests_text, "Errors", false, 1.0, 1.0, 0.1);
 				end
@@ -545,26 +548,26 @@ function module:CHAT_MSG_SYSTEM(event, msg)
 	end
 end
 
-function module:PLAYER_XP_UPDATE(event)
+function module:PLAYER_XP_UPDATE()
 	local current_xp = UnitXP("player");
 	local max_xp = UnitXPMax("player");
-	
+
 	local gained = current_xp - module.session.LastXP;
-	
+
 	if (gained < 0) then
 		gained = module.session.MaxXP - module.session.LastXP + current_xp;
 	end
-	
+
 	module.session.GainedXP = module.session.GainedXP + gained;
-	
+
 	module.session.LastXP = current_xp;
 	module.session.MaxXP = max_xp;
-	
+
 	if (module.session.AverageQuestXP > 0) then
 		local remaining_xp = max_xp - current_xp;
 		module.session.QuestsToLevel = ceil(remaining_xp / module.session.AverageQuestXP);
 	end
-	
+
 	module:Refresh();
 end
 
@@ -572,15 +575,15 @@ function module:UPDATE_EXHAUSTION()
 	module:Refresh();
 end
 
-function module:PLAYER_LEVEL_UP(event, level)
+function module:PLAYER_LEVEL_UP(_, level)
 	if (module:IsPlayerMaxLevel(level)) then
 		Addon:CheckDisabledStatus();
 	else
 		module.session.MaxXP = UnitXPMax("player");
-		
+
 		local remaining_xp = module.session.MaxXP - UnitXP("player");
 		module.session.QuestsToLevel = ceil(remaining_xp / module.session.AverageQuestXP) - 1;
 	end
-	
+
 	module.playerCanLevel = not module:IsPlayerMaxLevel(level);
 end
