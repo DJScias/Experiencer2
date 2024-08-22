@@ -111,7 +111,7 @@ function module:GetText()
 	local primaryText 										= {};
 	local secondaryText 									= {};
 
-	local threads, cloakLevel, cloakLevelText, cloakNext	= module:GetCloakInfo(false);
+	local threads, cloakLevel, cloakNext, cloakLevelText	= module:GetCloakInfo(false);
 
 	local remaining         								= cloakNext - threads;
 
@@ -159,7 +159,7 @@ function module:HasChatMessage()
 end
 
 function module:GetChatMessage()
-	local threads, _, cloakLevelText, cloakNext	= module:GetCloakInfo(false);
+	local threads, _, cloakNext, cloakLevelText	= module:GetCloakInfo(false);
 	local remaining         					= cloakNext - threads;
 
 	local progress          					= threads / cloakNext;
@@ -186,7 +186,7 @@ function module:GetBarData()
 	data.visual   = nil;
 
 	if (not module:IsDisabled()) then
-		data.current, data.level, _, data.max = module:GetCloakInfo(false);
+		data.current, data.level, data.max = module:GetCloakInfo(false);
 	end
 
 	return data;
@@ -302,5 +302,5 @@ function module:GetCloakInfo(isInitialLogin)
 		module.ready = true;
 	end
 
-	return GATHERED_THREADS, cloakLevel, cloakLevelText, cloakNext;
+	return GATHERED_THREADS, cloakLevel, cloakNext, cloakLevelText;
 end
