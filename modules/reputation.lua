@@ -446,7 +446,7 @@ function module:SaveCollapsedHeaders()
 
 	for factionIndex = 1, numFactions do
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
-		if factionData.isCollapsed then
+		if factionData and factionData.isCollapsed then
 			tinsert(collapsedHeaders, factionData.factionID);
 		end
 	end
@@ -460,7 +460,7 @@ function module:CloseCollapsedHeaders(collapsedHeaders)
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
 
 		for index, value in pairs(collapsedHeaders) do
-			if value == factionData.factionID then
+			if factionData and value == factionData.factionID then
 				C_Reputation.CollapseFactionHeader(factionIndex);
 				tremove(collapsedHeaders, index)
 				break;
@@ -704,96 +704,99 @@ function module:GetReputationsMenu(currentMenu)
 	local factionIndex = 1;
 	while factionIndex <= numFactions do
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
-		local factionID, name, standing, isHeader, isCollapsed, hasRep, isWatched, isChild = factionData.factionID, factionData.name, factionData.reaction, factionData.isHeader, factionData.isCollapsed, factionData.isHeaderWithRep, factionData.isWatched, factionData.isChild;
-		-- Don't count inactive reps.
-		if factionID == 0 then
-			break;
-		end
-		if name then
-			local progressText = "";
-			if factionID then
-				local currentRep, nextThreshold, isCapped, isParagon = module:GetReputationProgressByFactionID(factionID);
-				if (isParagon) then
-					standing = 9;
-				end
-
-				if (currentRep and not isCapped) then
-					progressText = string.format("  (|cfffff2ab%s|r / %s)", BreakUpLargeNumbers(currentRep), BreakUpLargeNumbers(nextThreshold));
-				end
+		-- TWW introduced potential empty headers, only handle below if factionData exists.
+		if factionData then
+			local factionID, name, standing, isHeader, isCollapsed, hasRep, isWatched, isChild = factionData.factionID, factionData.name, factionData.reaction, factionData.isHeader, factionData.isCollapsed, factionData.isHeaderWithRep, factionData.isWatched, factionData.isChild;
+			-- Don't count inactive reps.
+			if factionID == 0 then
+				break;
 			end
+			if name then
+				local progressText = "";
+				if factionID then
+					local currentRep, nextThreshold, isCapped, isParagon = module:GetReputationProgressByFactionID(factionID);
+					if (isParagon) then
+						standing = 9;
+					end
 
-			local standingText = "";
-
-			if not isHeader or hasRep then
-				local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
-				local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
-				if (majorFactionData and standing ~= 9) then
-					standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
-				elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
-					standingText, _ = module:GetFriendShipColorText(reputationInfo.friendshipFactionID, reputationInfo.reaction);
-				else
-					standingText, _ = module:GetStandingColorText(standing);
-				end
-			end
-
-			if isHeader and isCollapsed then
-				C_Reputation.ExpandFactionHeader(factionIndex);
-				tinsert(collapsedHeaders, factionData.factionID);
-				numFactions = C_Reputation.GetNumFactions();
-			end
-
-			if isHeader and isChild and current then -- Second tier header
-				if depth == 2 then
-					current = previous;
-					previous = nil;
+					if (currentRep and not isCapped) then
+						progressText = string.format("  (|cfffff2ab%s|r / %s)", BreakUpLargeNumbers(currentRep), BreakUpLargeNumbers(nextThreshold));
+					end
 				end
 
-				if not hasRep then
+				local standingText = "";
+
+				if not isHeader or hasRep then
+					local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
+					local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+					if (majorFactionData and standing ~= 9) then
+						standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
+					elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
+						standingText, _ = module:GetFriendShipColorText(reputationInfo.friendshipFactionID, reputationInfo.reaction);
+					else
+						standingText, _ = module:GetStandingColorText(standing);
+					end
+				end
+
+				if isHeader and isCollapsed then
+					C_Reputation.ExpandFactionHeader(factionIndex);
+					tinsert(collapsedHeaders, factionData.factionID);
+					numFactions = C_Reputation.GetNumFactions();
+				end
+
+				if isHeader and isChild and current then -- Second tier header
+					if depth == 2 then
+						current = previous;
+						previous = nil;
+					end
+
+					if not hasRep then
+						tinsert(current, {
+							name = name,
+							isHeader = true,
+							menuList = {},
+						})
+					else
+						tinsert(current, {
+							name = string.format("%s (%s)%s", name, standingText, progressText),
+							isHeaderWithRep = true,
+							factionID = factionID,
+							isWatched = isWatched,
+							menuList = {},
+						})
+					end
+
+					previous = current;
+					current = current[#current].menuList;
 					tinsert(current, {
 						name = name,
-						isHeader = true,
+						isSubMenuTitle = true,
+					})
+
+					depth = 2
+
+				elseif isHeader then -- First tier header
+					tinsert(factions, {
+						name = name,
+						isMajorHeader = true;
 						menuList = {},
 					})
-				else
+
+					current = factions[#factions].menuList;
+					tinsert(current, {
+						name = name,
+						isMajorHeaderTitle = true,
+					})
+
+					depth = 1
+				elseif not isHeader then -- First and second tier faction
 					tinsert(current, {
 						name = string.format("%s (%s)%s", name, standingText, progressText),
-						isHeaderWithRep = true,
+						isFaction = true,
 						factionID = factionID,
 						isWatched = isWatched,
-						menuList = {},
 					})
 				end
-
-				previous = current;
-				current = current[#current].menuList;
-				tinsert(current, {
-					name = name,
-					isSubMenuTitle = true,
-				})
-
-				depth = 2
-
-			elseif isHeader then -- First tier header
-				tinsert(factions, {
-					name = name,
-					isMajorHeader = true;
-					menuList = {},
-				})
-
-				current = factions[#factions].menuList;
-				tinsert(current, {
-					name = name,
-					isMajorHeaderTitle = true,
-				})
-
-				depth = 1
-			elseif not isHeader then -- First and second tier faction
-				tinsert(current, {
-					name = string.format("%s (%s)%s", name, standingText, progressText),
-					isFaction = true,
-					factionID = factionID,
-					isWatched = isWatched,
-				})
 			end
 		end
 
