@@ -1041,7 +1041,7 @@ function module:Update(elapsed)
 			end
 
 			local factionData = C_Reputation.GetWatchedFactionData();
-			if selectedFaction ~= factionData.name then
+			if factionData and selectedFaction ~= factionData.name then
 				module:MenuSetWatchedFactionID(factionData.factionID);
 				module.AutoWatchUpdate = 2;
 			else
