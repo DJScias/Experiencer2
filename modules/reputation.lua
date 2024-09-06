@@ -973,11 +973,19 @@ function module:UPDATE_FACTION()
 end
 
 local reputationPattern = FACTION_STANDING_INCREASED:gsub("%%s", "(.-)"):gsub("%%d", "(%%d*)%%");
+local warbandReputationPattern = FACTION_STANDING_INCREASED_ACCOUNT_WIDE:gsub("%%s", "(.-)"):gsub("%%d", "(%%d*)%%");
 
 function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
 	local reputation, amount = message:match(reputationPattern);
 	amount = tonumber(amount) or 0;
 
+	-- If no reputation is found, check for warband (account-wide).
+	if not reputation then
+		reputation, amount = message:match(warbandReputationPattern);
+		amount = tonumber(amount) or 0;
+	end
+
+	-- If not char-specific or warband reputation or keeping track of recent rep, end here.
 	if not reputation or not module.recentReputations then return end
 
 	local isGuild = false;
