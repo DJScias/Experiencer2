@@ -16,10 +16,10 @@ local module = Addon:RegisterModule("reputation", {
 		global = {
 			ShowRemaining = true,
 			ShowGainedRep = true,
+			SwitchTo = false,
 
 			AutoWatch = {
 				Enabled = false,
-				SwitchTo = false,
 				IgnoreGuild = true,
 				IgnoreInactive = true,
 				IgnoreBodyguard = true,
@@ -57,6 +57,12 @@ function module:Initialize()
 		};
 	end
 
+	-- Update SwitchTo to live as a global and not under AutoWatch.
+	if self.db.global.AutoWatch.SwitchTo then
+		self.db.global.SwitchTo = self.db.global.AutoWatch.SwitchTo;
+		self.db.global.AutoWatch.SwitchTo = nil
+	end
+
 	module.AutoWatchRecent = {};
 	module.AutoWatchUpdate = 0;
 	module.AutoWatchRecentTimeout = 0;
@@ -72,12 +78,11 @@ function module:GetSortedRecentList()
 		tinsert(sortedList, {name = name, data = data});
 	end
 	table.sort(sortedList, function(a, b)
-		if (a == nil and b == nil) then return false end
-		if (a == nil) then return true end
-		if (b == nil) then return false end
-
-		return a.name < b.name;
-	end);
+		if a == nil or b == nil then
+		  return a ~= nil -- Non-nil comes first
+		end
+		return a.name < b.name
+	  end)
 	for index, data in ipairs(sortedList) do
 		module.recentReputations[data.name].sortedIndex = index;
 	end
@@ -107,12 +112,11 @@ function module:OnMouseWheel(delta)
 end
 
 function module:CanLevelUp()
-	local factionID = C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().factionID or nil;
-	if factionID and C_Reputation.IsFactionParagon(factionID) then
-		local _, _, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID);
-		return hasRewardPending;
+	local factionData = C_Reputation.GetWatchedFactionData()
+	if factionData and C_Reputation.IsFactionParagon(factionData.factionID) then
+		return C_Reputation.GetFactionParagonInfo(factionData.factionID).hasRewardPending
 	end
-	return false;
+	return false
 end
 
 function module:SetStanding(factionID)
@@ -424,12 +428,12 @@ function module:GetOptionsMenu(currentMenu)
 	autoWatchedOption:CreateCheckbox("Ignore guild reputation", function() return self.db.global.AutoWatch.IgnoreGuild; end, function() self.db.global.AutoWatch.IgnoreGuild = not self.db.global.AutoWatch.IgnoreGuild; end);
 	autoWatchedOption:CreateCheckbox("Ignore bodyguard reputation", function() return self.db.global.AutoWatch.IgnoreBodyguard; end, function() self.db.global.AutoWatch.IgnoreBodyguard = not self.db.global.AutoWatch.IgnoreBodyguard; end);
 	autoWatchedOption:CreateCheckbox("Ignore inactive reputation", function() return self.db.global.AutoWatch.IgnoreInactive; end, function() self.db.global.AutoWatch.IgnoreInactive = not self.db.global.AutoWatch.IgnoreInactive; end);
-	local switchToOption = currentMenu:CreateCheckbox("Auto switch bar to last gained reputation", function() return self.db.global.AutoWatch.SwitchTo; end, function()
-		self.db.global.AutoWatch.SwitchTo = not self.db.global.AutoWatch.SwitchTo;
+	local switchToOption = currentMenu:CreateCheckbox("Auto switch bar to last gained reputation", function() return self.db.global.SwitchTo; end, function()
+		self.db.global.SwitchTo = not self.db.global.SwitchTo;
 	end);
 	switchToOption:SetTooltip(function(tooltip, elementDescription)
 		GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-		GameTooltip_AddNormalLine(tooltip, "Automatically switch the Reputation bar to track latest gained reputation.");
+		GameTooltip_AddNormalLine(tooltip, "Automatically switch the Reputation bar to track latest gained reputation.|n|n|cnWARNING_FONT_COLOR:Note: Regardless of your \"auto add\" settings, it will be added to your Recent Reputations list.|r");
 	end);
 
 	currentMenu:CreateDivider();
@@ -1001,8 +1005,9 @@ function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
 		amount = tonumber(amount) or 0;
 	end
 
-	-- If not char-specific or warband reputation or keeping track of recent rep, end here.
-	if not reputation or not module.recentReputations then return end
+	-- If not char-specific or warband reputation, we end here.
+	if not reputation then return end
+	local factionID = module:GetFactionIDByName(reputation);
 
 	local isGuild = false;
 	if reputation == GUILD then
@@ -1014,20 +1019,32 @@ function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
 		end
 	end
 
+	-- If recentReputations doesnt exist, we're done.
+	if not module.recentReputations then return end
+
+	-- If auto-switch, let's do that.
+	if self.db.global.SwitchTo then
+		module:MenuSetWatchedFactionID(factionID);
+	end
+
+	-- Check if the recent reputation exists.
 	if not module.recentReputations[reputation] then
-		module.recentReputations[reputation] = {
-			amount = 0,
-			factionID = module:GetFactionIDByName(reputation),
-		};
+		-- If auto-watch enabled or switchTo, create it regardless.
+		-- Otherwise check if your current watched == current given and then add it.
+		if self.db.global.AutoWatch.Enabled or self.db.global.SwitchTo or
+		(C_Reputation.GetWatchedFactionData() and C_Reputation.GetWatchedFactionData().factionID == factionID) then
+			module.recentReputations[reputation] = {
+				amount = 0,
+				factionID = factionID,
+			};
+		else -- If neither auto-watch is on, or you're not currently tracking it, we stop.
+			return;
+		end
 	end
 
 	module.recentReputations[reputation].amount = module.recentReputations[reputation].amount + amount;
 
 	if self.db.global.AutoWatch.Enabled then
-		if self.db.global.AutoWatch.SwitchTo then
-			module:MenuSetWatchedFactionID(module.recentReputations[reputation].factionID);
-		end
-
 		if module.AutoWatchUpdate ~= 2 then
 			if (self.db.global.AutoWatch.IgnoreInactive and module:GetFactionActive(module.recentReputations[reputation].factionID)) then return end
 			if (self.db.global.AutoWatch.IgnoreBodyguard and BODYGUARD_FACTIONS[module.recentReputations[reputation].factionID] ~= nil) then return end
