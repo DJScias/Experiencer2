@@ -593,15 +593,16 @@ function module:GetRecentReputationsMenu()
 	for _, rep in ipairs(recentRepsList) do
 		local name = rep.name;
 		local data = rep.data;
+		local factionID = data.factionID;
 
 		if name then
-			local factionData = C_Reputation.GetFactionDataByID(data.factionID);
+			local factionData = C_Reputation.GetFactionDataByID(factionID);
 			local standing, isHeader, hasRep, isWatched = factionData.reaction, factionData.isHeader, factionData.isHeaderWithRep, factionData.isWatched;
 
 			if not isHeader or hasRep then
 				local standing_text = "";
-				local majorFactionData = C_MajorFactions.GetMajorFactionData(data.factionID);
-				local reputationInfo = C_GossipInfo.GetFriendshipReputation(data.factionID);
+				local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID);
+				local reputationInfo = C_GossipInfo.GetFriendshipReputation(factionID);
 
 				if (majorFactionData) then
 					standing_text = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
@@ -614,7 +615,7 @@ function module:GetRecentReputationsMenu()
 				tinsert(factions, {
 					name = string.format("%s (%s)  +%s rep this session", name, standing_text, BreakUpLargeNumbers(data.amount)),
 					isRecentFaction = true,
-					factionID = data.factionID,
+					factionID = factionID,
 					isWatched = isWatched,
 				})
 			end
@@ -768,9 +769,9 @@ function module:GetReputationsMenu(currentMenu)
 					if (majorFactionData and standing ~= 9) then
 						standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
 					elseif (reputationInfo and reputationInfo.friendshipFactionID > 0) then
-						standingText, _ = module:GetFriendShipColorText(reputationInfo.friendshipFactionID, reputationInfo.reaction);
+						standingText = module:GetFriendShipColorText(reputationInfo.friendshipFactionID, reputationInfo.reaction);
 					else
-						standingText, _ = module:GetStandingColorText(standing);
+						standingText = module:GetStandingColorText(standing);
 					end
 				end
 
@@ -968,24 +969,18 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 			[5] = colors[7], -- Journeyman
 			[6] = colors[8], -- Expert
 		}
-	elseif friendshipFactionID == 2517 or friendshipFactionID == 2518 then -- Wrathion/Sabellian TO-DO: Confirm colors
-		friendshipColors = {
-			[1] = colors[4], -- Acquaintance
-			[2] = colors[4], -- Cohort
-			[3] = colors[5], -- Ally
-			[4] = colors[6], -- Fang
-			[5] = colors[7], -- Friend
-			[6] = colors[8], -- True Friend
-			[9] = colors[9], -- Paragon
-		}
-	elseif friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553 or friendshipFactionID == 2550 or friendshipFactionID == 2615 then -- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi / Cobalt Assembly / Azerothian Archives
-		friendshipColors = {
-			[1] = colors[4], -- Neutral    -- Aspirational  -- Anomaly                   -- Empty    -- Junior
-			[2] = colors[5], -- Preferred  -- Amateur       -- Future Friend             -- Low      -- Capable
-			[3] = colors[6], -- Respected  -- Competent     -- Rift Mender               -- Medium   -- Learned
-			[4] = colors[7], -- Valued     -- Skilled       -- Timewalker                -- High     -- Resident
-			[5] = colors[8], -- Esteemed   -- Professional  -- Legend of the Multiverse  -- Maximum  -- Tenured
-		}
+	elseif friendshipFactionID == 2640 or friendshipFactionID == 2605 or friendshipFactionID == 2607 or friendshipFactionID == 2601 or friendshipFactionID == 2517 or friendshipFactionID == 2518 or friendshipFactionID == 2544 or friendshipFactionID == 2568 or friendshipFactionID == 2553 or friendshipFactionID == 2550 or friendshipFactionID == 2615 then
+		-- Brann Bronzebeard
+		-- The General / The Vizier / The Weaver
+		-- Wrathion/Sabellian
+		-- Artisan's Consortium - Dragon Isles Branch / Glimmerogg Racer / Soridormi / Cobalt Assembly / Azerothian Archives
+		-- Always friendly green
+		return string.format('|cff%02x%02x%02x%s|r',
+		colors[5].r * 255,
+		colors[5].g * 255,
+		colors[5].b * 255,
+		standing
+		), colors[5];
 	end
 
 	if friendshipColors[standingLevel] == nil then
