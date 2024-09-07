@@ -414,6 +414,36 @@ function module:GetOptionsMenu(currentMenu)
 
 	currentMenu:CreateDivider();
 
+	local reputationSortType = currentMenu:CreateButton("Reputation Filter");
+	reputationSortType:CreateTitle("Reputation Filter");
+	reputationSortType:SetTooltip(function(tooltip, elementDescription)
+		GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+		GameTooltip_AddNormalLine(tooltip, "Filters your reputation list by chosen type.|n|n|cnWARNING_FONT_COLOR:Note: This option can also be found in the reputations panel in the upper right corner.|r");
+	end);
+	local sortTypeAll = reputationSortType:CreateRadio("All", function() return C_Reputation.GetReputationSortType() == 0; end, function()
+		C_Reputation.SetReputationSortType(0)
+	end);
+
+	local sortTypeWarband = reputationSortType:CreateRadio("Warband", function() return C_Reputation.GetReputationSortType() == 1; end, function()
+		C_Reputation.SetReputationSortType(1)
+	end);
+
+	local sortTypeChar = reputationSortType:CreateRadio(UnitName("PLAYER"), function() return C_Reputation.GetReputationSortType() == 2; end, function()
+		C_Reputation.SetReputationSortType(2)
+	end);
+
+	local legacyOption = currentMenu:CreateCheckbox("Show Legacy Reputations", function() return C_Reputation.AreLegacyReputationsShown(); end, function()
+		C_Reputation.SetLegacyReputationsShown(not C_Reputation.AreLegacyReputationsShown());
+		module:RefreshText();
+	end);
+	legacyOption:SetTooltip(function(tooltip, elementDescription)
+		GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+		GameTooltip_AddNormalLine(tooltip, "This option will toggle all reputations prior to |cnWHITE_FONT_COLOR:The War Within|r.|n|n|cnWARNING_FONT_COLOR:Note: This option can also be found in the reputations panel in the upper right corner.|r");
+	end);
+	legacyOption:SetResponse(MenuResponse.CloseAll);
+
+	currentMenu:CreateDivider();
+
 	currentMenu:CreateCheckbox("Show gained reputation", function() return self.db.global.ShowGainedRep; end, function()
 		self.db.global.ShowGainedRep = not self.db.global.ShowGainedRep;
 		module:RefreshText();

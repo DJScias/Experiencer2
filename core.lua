@@ -1125,24 +1125,18 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 		local splitOneOption = rootDescription:CreateRadio("Split into one", function() return self.db.char.NumSplits == 1; end, function()
 			Addon:SetSplits(1);
 		end);
-		splitOneOption:SetShouldRespondIfSubmenu(true);
-		splitOneOption:SetResponse(MenuResponse.CloseAll);
 		local splitTwoOption = rootDescription:CreateRadio("Split into two", function() return self.db.char.NumSplits == 2; end, function()
 			Addon:SetSplits(2);
 		end);
-		splitTwoOption:SetShouldRespondIfSubmenu(true);
-		splitTwoOption:SetResponse(MenuResponse.CloseAll);
 		if numTotalEnabled < 2 then
 			splitTwoOption:SetEnabled(false);
 		end
 		local splitThreeOption = rootDescription:CreateRadio("Split into three", function() return self.db.char.NumSplits == 3; end, function()
 			Addon:SetSplits(3);
 		end);
-		splitThreeOption:SetShouldRespondIfSubmenu(true);
-		splitThreeOption:SetResponse(MenuResponse.CloseAll);
 		splitThreeOption:SetTooltip(function(tooltip, elementDescription)
 			GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-			GameTooltip_AddNormalLine(tooltip, "When splitting into three the text is shortened and you can hover over the bar to view full text.|n|nYou will see a plus symbol (+) when some information is hidden.");
+			GameTooltip_AddNormalLine(tooltip, "When the bar is split into three, the text is truncated and you can hover over the bar to see the full text.|n|nYou will see a plus symbol (+) when some information is hidden.");
 		end);
 		if numTotalEnabled < 3 then
 			splitThreeOption:SetEnabled(false);

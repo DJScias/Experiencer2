@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [6.2.0] - Unreleased
 
+### Added
+- Add two new options introduced to reputations in The War Within (also found in the upper right corner on the reputations panel):
+    - "Reputation Filter" lets you filter your reputations between All, Warband and your Character.
+	- "Show Legacy Reputation" toggles all the reputations prior to The War Within.
+
 ### Changed
 - Rewrote the behavior of "Auto add to Recent Reputations list" and "Auto switch bar to last gained reputation".
     - Auto-add has no noticeable end-user changes that are worth mentioning.
