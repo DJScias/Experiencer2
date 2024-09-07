@@ -8,13 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [6.2.0] - Unreleased
 
 ### Changed
-
-## [6.1.9] - 2024-09-07
 - Rewrote the behavior of "Auto add to Recent Reputations list" and "Auto switch bar to last gained reputation".
     - Auto-add has no noticeable end-user changes that are worth mentioning.
 	- Auto switch now works correctly even if "auto add" is not checked.
 		- However, it will always add the switched reputation to Recent Reputations, regardless of the "auto add" setting.
     - Should completely fix [#10](https://github.com/DJScias/Experiencer2/issues/10), thanks to Github users Demonicka and JBabbb for helping track this down.
+
+## [6.1.9] - 2024-09-07
 
 ### Changed
 - Rewrote the reputation list coding. This should work a bit more straightforward and solves some quirks.
