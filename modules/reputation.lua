@@ -476,26 +476,28 @@ function module:GetFactionActive(givenFactionID)
 
 	while numFactions >= 1 do
 		local factionData = C_Reputation.GetFactionDataByIndex(numFactions);
-		local factionID, isHeader, isCollapsed = factionData.factionID, factionData.isHeader, factionData.isCollapsed;
+		if factionData then
+			local factionID, isHeader, isCollapsed = factionData.factionID, factionData.isHeader, factionData.isCollapsed;
 
-		if factionID == 0 and isHeader and isCollapsed then
-			inactiveCollapsed = true;
-			C_Reputation.ExpandFactionHeader(numFactions);
-			numFactions = C_Reputation.GetNumFactions();
-		else
-			if factionID == givenFactionID then
-				isActive = C_Reputation.IsFactionActive(numFactions);
-				break;
+			if factionID == 0 and isHeader and isCollapsed then
+				inactiveCollapsed = true;
+				C_Reputation.ExpandFactionHeader(numFactions);
+				numFactions = C_Reputation.GetNumFactions();
+			else
+				if factionID == givenFactionID then
+					isActive = C_Reputation.IsFactionActive(numFactions);
+					break;
+				end
+	
+				numFactions = numFactions - 1;
 			end
-
-			numFactions = numFactions - 1;
 		end
 	end
 
 	if inactiveCollapsed then
 		for factionIndex = numFactions, 1, -1 do
-			local factionID = C_Reputation.GetFactionDataByIndex(factionIndex).factionID;
-			if factionID == 0 then
+			local faction = C_Reputation.GetFactionDataByIndex(factionIndex);
+			if faction and faction.factionID == 0 then
 				C_Reputation.CollapseFactionHeader(factionIndex);
 			end
 		end
@@ -696,7 +698,7 @@ function module:GetReputationsMenu(currentMenu)
 	local factions = {};
 
 	local previous, current = nil, nil;
-	local depth = 0;
+	local tier = 0;
 
 	local collapsedHeaders = {};
 
@@ -738,44 +740,24 @@ function module:GetReputationsMenu(currentMenu)
 					end
 				end
 
+				-- Open up collapsed headers temporarily
 				if isHeader and isCollapsed then
 					C_Reputation.ExpandFactionHeader(factionIndex);
 					tinsert(collapsedHeaders, factionData.factionID);
 					numFactions = C_Reputation.GetNumFactions();
 				end
 
-				if isHeader and isChild and current then -- Second tier header
-					if depth == 2 then
+				-- 2nd tier has some quirks which we fix here:
+				-- If 2nd but not a child, it's 1st tier.
+				-- If 2nd tier but a child, but also a header (with or without rep), it's 1st tier.
+				if tier == 2 then
+					if not isChild or (isChild and (isHeader or hasRep)) then
 						current = previous;
-						previous = nil;
+						tier = 1;
 					end
+				end
 
-					if not hasRep then
-						tinsert(current, {
-							name = name,
-							isHeader = true,
-							menuList = {},
-						})
-					else
-						tinsert(current, {
-							name = string.format("%s (%s)%s", name, standingText, progressText),
-							isHeaderWithRep = true,
-							factionID = factionID,
-							isWatched = isWatched,
-							menuList = {},
-						})
-					end
-
-					previous = current;
-					current = current[#current].menuList;
-					tinsert(current, {
-						name = name,
-						isSubMenuTitle = true,
-					})
-
-					depth = 2
-
-				elseif isHeader then -- First tier header
+				if isHeader and not hasRep and not isChild then -- Expansion 1st tier header
 					tinsert(factions, {
 						name = name,
 						isMajorHeader = true;
@@ -788,8 +770,42 @@ function module:GetReputationsMenu(currentMenu)
 						isMajorHeaderTitle = true,
 					})
 
-					depth = 1
-				elseif not isHeader then -- First and second tier faction
+					tier = 1;
+				elseif tier == 1 then -- 2nd tier header/expansions
+					if not isHeader then -- Simple faction, no header business.
+						tinsert(current, {
+							name = string.format("%s (%s)%s", name, standingText, progressText),
+							isFaction = true,
+							factionID = factionID,
+							isWatched = isWatched,
+						})
+					else
+						if not hasRep then
+							tinsert(current, {
+								name = name,
+								isHeader = true,
+								menuList = {},
+							})
+						else
+							tinsert(current, {
+								name = string.format("%s (%s)%s", name, standingText, progressText),
+								isHeaderWithRep = true,
+								factionID = factionID,
+								isWatched = isWatched,
+								menuList = {},
+							})
+						end
+
+						previous = current;
+						current = current[#current].menuList;
+						tinsert(current, {
+							name = name,
+							isSubMenuTitle = true,
+						})
+
+						tier = 2;
+					end
+				elseif tier == 2 then -- 3rd tier header
 					tinsert(current, {
 						name = string.format("%s (%s)%s", name, standingText, progressText),
 						isFaction = true,

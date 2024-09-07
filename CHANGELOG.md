@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.1.9] - 2024-09-07
+
+### Changed
+- Rewrote the reputation list coding. This should work a bit more straightforward and solves some quirks.
+    - For example: Brann Bronzebread being part of "The Severed Threads" (which he's not last I checked).
+
+### Fixed
+- Nil check for `factionData` in `GetFactionActive`.
+
 ## [6.1.8] - 2024-09-06
 
 ### Fixed
