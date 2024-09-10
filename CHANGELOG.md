@@ -5,10 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [6.2.1] - Unreleased
+## [6.2.1] - 2024-09-10
 
 ### Changed
 - Updated some reputation colors (mainly friendships that don't stick by the normal reputation namings).
+    - From my checks, they seem to all be using the "friendly" green color for every rank. Please report if different of course!
+
+### Fixed
+- Fix reputation `CanLevelUp`, `C_Reputation.GetFactionParagonInfo` does not return a data struct, so `hasRewardPending` retrieval failed.
+    - Should fix [#12](https://github.com/DJScias/Experiencer2/issues/12).
 
 ## [6.2.0] - 2024-09-07
 

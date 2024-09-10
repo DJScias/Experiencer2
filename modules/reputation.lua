@@ -114,7 +114,8 @@ end
 function module:CanLevelUp()
 	local factionData = C_Reputation.GetWatchedFactionData()
 	if factionData and C_Reputation.IsFactionParagon(factionData.factionID) then
-		return C_Reputation.GetFactionParagonInfo(factionData.factionID).hasRewardPending
+		local hasRewardPending = select(4, C_Reputation.GetFactionParagonInfo(factionData.factionID));
+		return hasRewardPending;
 	end
 	return false
 end
