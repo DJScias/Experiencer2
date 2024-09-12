@@ -10,12 +10,12 @@ local ADDON_NAME, Addon = ...;
 local LibDataBroker = LibStub("LibDataBroker-1.1");
 
 local settings = {
-	type = "data source",
+	type  = "data source",
 	label = "Experiencer",
-	text = "Experiencer Text Display",
-	icon = "Interface\\Icons\\Ability_Paladin_EmpoweredSealsRighteous",
+	text  = "Experiencer Text Display",
+	icon  = "Interface\\Icons\\Ability_Paladin_EmpoweredSealsRighteous",
 	OnClick = function(_, button)
-		if(button == "RightButton") then
+		if button == "RightButton" then
 			Addon:OpenContextMenu();
 		end
 	end,
@@ -26,7 +26,7 @@ function Addon:InitializeDataBroker()
 end
 
 function Addon:UpdateDataBrokerText(text)
-	if (Addon.BrokerModule ~= nil) then
+	if Addon.BrokerModule then
 		Addon.BrokerModule.text = text;
 	end
 end
