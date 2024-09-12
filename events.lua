@@ -17,17 +17,16 @@ end
 
 local hiddenForPetBattle = false;
 
-function Addon:PET_BATTLE_OPENING_START(_)
-	if(ExperiencerFrameBars:IsVisible()) then
+function Addon:PET_BATTLE_OPENING_START()
+	if ExperiencerFrameBars:IsVisible() then
 		hiddenForPetBattle = true;
 		Addon:HideBar();
 	end
 end
 
-function Addon:PET_BATTLE_CLOSE(_)
-	if(hiddenForPetBattle) then
+function Addon:PET_BATTLE_CLOSE()
+	if hiddenForPetBattle then
 		Addon:ShowBar();
+		hiddenForPetBattle = false;
 	end
-
-	hiddenForPetBattle = false;
 end
