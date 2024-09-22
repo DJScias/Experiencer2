@@ -586,12 +586,13 @@ function module:GetFactionIDByName(factionName)
 
 	while factionIndex <= numFactions do
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
+		if factionData then
 		local factionID, name, isHeader, isCollapsed = factionData.factionID, factionData.name, factionData.isHeader, factionData.isCollapsed;
 		-- Don't count inactive reps.
 		if factionID == 0 then break; end
 
 		-- If the faction has a name and it matches the requested factionName
-		if name and name == factionName then
+			if name == factionName then
 			requestedFactionID = factionID;
 			break;
 		end
@@ -601,6 +602,7 @@ function module:GetFactionIDByName(factionName)
 			C_Reputation.ExpandFactionHeader(factionIndex);
 			tinsert(collapsedHeaders, factionID);
 			numFactions = C_Reputation.GetNumFactions(); -- Update after expansion
+			end
 		end
 
 		factionIndex = factionIndex + 1;
