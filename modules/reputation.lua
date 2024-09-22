@@ -17,6 +17,7 @@ local module = Addon:RegisterModule("reputation", {
 			ShowRemaining = true,
 			ShowGainedRep = true,
 			SwitchTo = false,
+			DeferCombat = false,
 
 			AutoWatch = {
 				Enabled = false,
@@ -43,9 +44,12 @@ local BODYGUARD_FACTIONS = {
 	[1736] = "Tormmok",
 };
 
+local inactiveReps = {};
+
 function module:Initialize()
 	module:RegisterEvent("UPDATE_FACTION");
 	module:RegisterEvent("CHAT_MSG_COMBAT_FACTION_CHANGE");
+	module:RegisterEvent("PLAYER_REGEN_ENABLED");
 	local globalDB = self.db.global;
 
 	local factionData = C_Reputation.GetWatchedFactionData();
@@ -501,6 +505,15 @@ function module:GetOptionsMenu(currentMenu)
 		GameTooltip_AddNormalLine(tooltip, "Automatically switch the Reputation bar to track latest gained reputation.|n|n|cnWARNING_FONT_COLOR:Note: Regardless of your \"auto add\" settings, it will be added to your Recent Reputations list.|r");
 	end);
 
+	local deferOption = currentMenu:CreateCheckbox("Wait for end of combat", function() return self.db.global.DeferCombat; end, function()
+		self.db.global.DeferCombat = not self.db.global.DeferCombat;
+		module:RefreshText();
+	end);
+	deferOption:SetTooltip(function(tooltip, elementDescription)
+		GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+		GameTooltip_AddNormalLine(tooltip, "Delay all reputation calculations until the end of combat. This option is off by default.|n|n|cnWARNING_FONT_COLOR:Note: This can potentially avoid lag or freezing by waiting to do all reputation calculations until combat is over.|r");
+	end);
+
 	currentMenu:CreateDivider();
 	currentMenu:CreateTitle("Set Watched Faction");
 
@@ -541,43 +554,20 @@ function module:CloseCollapsedHeaders(collapsedHeaders)
 end
 
 function module:GetFactionActive(givenFactionID)
-	local isActive = true;
-	local numFactions = C_Reputation.GetNumFactions();
-	local inactiveCollapsed = false;
-
-	while numFactions >= 1 do
-		local factionData = C_Reputation.GetFactionDataByIndex(numFactions);
-		if factionData then
-			local factionID, isHeader, isCollapsed = factionData.factionID, factionData.isHeader, factionData.isCollapsed;
-
-			if factionID == 0 and isHeader and isCollapsed then
-				inactiveCollapsed = true;
-				C_Reputation.ExpandFactionHeader(numFactions);
-				numFactions = C_Reputation.GetNumFactions();
-			else
-				if factionID == givenFactionID then
-					isActive = C_Reputation.IsFactionActive(numFactions);
-					break;
-				end
-
-				numFactions = numFactions - 1;
-			end
-		end
+	-- If no inactive reps, all factions are active.
+	if not next(inactiveReps) then
+		return true;
 	end
 
-	if inactiveCollapsed then
-		for factionIndex = numFactions, 1, -1 do
-			local faction = C_Reputation.GetFactionDataByIndex(factionIndex);
-			if faction and faction.factionID == 0 then
-				C_Reputation.CollapseFactionHeader(factionIndex);
-			end
-		end
+	-- If the faction exists within, it means it is inactive.
+	if inactiveReps[givenFactionID] ~= nil then
+		return false;
 	end
 
-	return isActive;
+	return true;
 end
 
-function module:GetFactionIDByName(factionName)
+function module:GetFactionInfoByName(factionName)
 	local requestedFactionID = 0;
 	local collapsedHeaders = {};
 
@@ -587,21 +577,19 @@ function module:GetFactionIDByName(factionName)
 	while factionIndex <= numFactions do
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
 		if factionData then
-		local factionID, name, isHeader, isCollapsed = factionData.factionID, factionData.name, factionData.isHeader, factionData.isCollapsed;
-		-- Don't count inactive reps.
-		if factionID == 0 then break; end
+			local factionID, name, isHeader, isCollapsed = factionData.factionID, factionData.name, factionData.isHeader, factionData.isCollapsed;
 
-		-- If the faction has a name and it matches the requested factionName
+			-- If the faction has a name and it matches the requested factionName
 			if name == factionName then
-			requestedFactionID = factionID;
-			break;
-		end
+				requestedFactionID = factionID;
+				break;
+			end
 
-		-- If the faction is a header and collapsed, expand it and update numFactions
-		if isHeader and isCollapsed then
-			C_Reputation.ExpandFactionHeader(factionIndex);
-			tinsert(collapsedHeaders, factionID);
-			numFactions = C_Reputation.GetNumFactions(); -- Update after expansion
+			-- If the faction is a header and collapsed, expand it and update numFactions
+			if isHeader and isCollapsed then
+				C_Reputation.ExpandFactionHeader(factionIndex);
+				tinsert(collapsedHeaders, factionID);
+				numFactions = C_Reputation.GetNumFactions(); -- Update after expansion
 			end
 		end
 
@@ -609,7 +597,7 @@ function module:GetFactionIDByName(factionName)
 	end
 
 	module:CloseCollapsedHeaders(collapsedHeaders);
-	return requestedFactionID;
+	return requestedFactionID, factionIndex, C_Reputation.IsFactionActive(factionIndex);
 end
 
 function module:MenuSetWatchedFactionID(factionID)
@@ -780,6 +768,8 @@ function module:GetReputationsMenu(currentMenu)
 	local tier = 0;
 
 	local collapsedHeaders = {};
+	local inactiveHeader = false;
+	inactiveReps = {};
 
 	local numFactions = C_Reputation.GetNumFactions();
 	local factionIndex = 1;
@@ -787,12 +777,21 @@ function module:GetReputationsMenu(currentMenu)
 		local factionData = C_Reputation.GetFactionDataByIndex(factionIndex);
 		-- TWW introduced potential empty headers, only handle below if factionData exists.
 		if factionData then
-			local factionID, name, standing, isHeader, isCollapsed, hasRep, isWatched, isChild = factionData.factionID, factionData.name, factionData.reaction, factionData.isHeader, factionData.isCollapsed, factionData.isHeaderWithRep, factionData.isWatched, factionData.isChild;
-			-- Don't count inactive reps.
+			local factionID, name, standing, isHeader, isCollapsed, hasRep, isWatched, isChild, isAccountWide = factionData.factionID, factionData.name, factionData.reaction, factionData.isHeader, factionData.isCollapsed, factionData.isHeaderWithRep, factionData.isWatched, factionData.isChild, factionData.isAccountWide;
+			-- If inactive reps, open that header and save them for later.
 			if factionID == 0 then
-				break;
+				inactiveHeader = true;
+
+				if isHeader and isCollapsed then
+					C_Reputation.ExpandFactionHeader(factionIndex);
+					tinsert(collapsedHeaders, factionData.factionID);
+					numFactions = C_Reputation.GetNumFactions();
+				end
 			end
-			if name then
+			if not C_Reputation.IsFactionActive(factionIndex) then
+				inactiveReps[factionData.factionID] = true;
+			end
+			if name and not inactiveHeader then
 				local progressText = "";
 				if factionID then
 					local currentRep, nextThreshold, isCapped, isParagon = module:GetReputationProgressByFactionID(factionID);
@@ -1017,21 +1016,122 @@ function module:GetFriendShipColorText(friendshipFactionID, standing)
 	), friendshipColor;
 end
 
-function module:UPDATE_FACTION()
+function module:HandleUpdateFaction()
 	local factionData = C_Reputation.GetWatchedFactionData();
-	if factionData then
-		module.levelUpRequiresAction = C_Reputation.IsFactionParagon(factionData.factionID);
+	if not factionData then return end;
 
-		local instant = false;
-		if factionData.name ~= module.Tracked or not factionData.name then
-			instant = true;
-			module.AutoWatchUpdate = 0;
-		end
-		module.Tracked = factionData.name;
+	module.levelUpRequiresAction = C_Reputation.IsFactionParagon(factionData.factionID);
 
-		module:SetStanding(factionData.factionID);
-		module:Refresh(instant);
+	local instant = factionData.name ~= module.Tracked or not factionData.name;
+	module.Tracked = factionData.name;
+
+	if instant then
+		module.AutoWatchUpdate = 0;
 	end
+
+	module:SetStanding(factionData.factionID);
+	module:Refresh(instant);
+end
+
+local reputationsToUpdate = {};
+local updateFactionRequired = false;
+
+function module:HandleReputationUpdates()
+	for reputation, amount in pairs(reputationsToUpdate) do
+		updateFactionRequired = true;
+        reputationsToUpdate[reputation] = nil;
+
+        local factionID, _, isActive = module:GetFactionInfoByName(reputation);
+
+        if isActive then
+            inactiveReps[factionID] = nil;
+        else
+            inactiveReps[factionID] = true;
+        end
+
+		local isGuild = (reputation == GUILD) and true or false;
+        if isGuild then
+            local guildName = GetGuildInfo("player")
+            if guildName then
+                reputation = guildName;
+            end
+        end
+
+		-- Proceed only if recentReputations exists
+		if module.recentReputations then
+			-- Cache globalDB, recentReputations, and watchedFactionData
+			local globalDB = self.db.global;
+			local recentReputations = module.recentReputations;
+			local watchedFactionData = C_Reputation.GetWatchedFactionData();
+
+			-- Check if the recent reputation exists.
+            local reputationEntry = recentReputations[reputation];
+            if not reputationEntry then
+                -- If auto-watch enabled or switchTo, create it regardless.
+				-- Otherwise check if your current watched == current given and then add it.
+                if globalDB.AutoWatch.Enabled or globalDB.SwitchTo or
+                   (watchedFactionData and watchedFactionData.factionID == factionID) then
+                    recentReputations[reputation] = { amount = 0, factionID = factionID };
+					reputationEntry = recentReputations[reputation];
+				else -- If neither auto-watch is on, or you're not currently tracking it, we stop.
+					return;
+				end
+            end
+
+			-- If auto-switch, let's do that.
+			if globalDB.SwitchTo then
+                module:MenuSetWatchedFactionID(factionID);
+            end
+
+			-- Increment the amount
+            if reputationEntry then
+                reputationEntry.amount = reputationEntry.amount + amount;
+            end
+
+			if globalDB.AutoWatch.Enabled and module.AutoWatchUpdate ~= 2 then
+                local shouldIgnore = globalDB.AutoWatch.IgnoreInactive and not module:GetFactionActive(reputationEntry.factionID);
+                local isBodyguard = globalDB.AutoWatch.IgnoreBodyguard and BODYGUARD_FACTIONS[reputationEntry.factionID];
+                local isGuildIgnored = globalDB.AutoWatch.IgnoreGuild and isGuild;
+
+                if not (shouldIgnore or isBodyguard or isGuildIgnored) then
+                    module.AutoWatchUpdate = 1;
+                    module.AutoWatchRecentTimeout = 0.1;
+
+                    module.AutoWatchRecent[reputation] = (module.AutoWatchRecent[reputation] or 0) + amount;
+                end
+            end
+
+			-- If reputation changes have happened to watched, we probably want to run faction updates.
+            if watchedFactionData and watchedFactionData.name == reputation then
+                updateFactionRequired = false;
+                RunNextFrame(function()
+                    module:HandleUpdateFaction();
+                end);
+            end
+		end
+	end
+end
+
+function module:UPDATE_FACTION()
+	-- If in combat, hold the update.
+	if self.db.global.DeferCombat and InCombatLockdown() then
+		updateFactionRequired = true;
+		return;
+	end
+
+	module:HandleUpdateFaction();
+end
+
+function module:PLAYER_REGEN_ENABLED()
+	RunNextFrame(function()
+		-- If we have reputation updates to process, do that.
+		if next(reputationsToUpdate) then
+			module:HandleReputationUpdates();
+		elseif updateFactionRequired then
+			updateFactionRequired = false;
+			module:HandleUpdateFaction();
+		end
+	end);
 end
 
 local reputationPattern = FACTION_STANDING_INCREASED:gsub("%%s", "(.-)"):gsub("%%d", "(%%d*)%%");
@@ -1039,73 +1139,25 @@ local warbandReputationPattern = FACTION_STANDING_INCREASED_ACCOUNT_WIDE:gsub("%
 
 function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
 	local reputation, amount = message:match(reputationPattern);
-	amount = tonumber(amount) or 0;
 
 	-- If no reputation is found, check for warband (account-wide).
 	if not reputation then
 		reputation, amount = message:match(warbandReputationPattern);
-		amount = tonumber(amount) or 0;
 	end
 
 	-- If not char-specific or warband reputation, we end here.
 	if not reputation then return end
-	local factionID = module:GetFactionIDByName(reputation);
 
-	local isGuild = false;
-	if reputation == GUILD then
-		isGuild = true;
+	reputationsToUpdate[reputation] = (reputationsToUpdate[reputation] or 0) + tonumber(amount) or 0;
 
-		local guildName = GetGuildInfo("player");
-		if guildName then
-			reputation = guildName;
-		end
+	-- If in combat, we don't process the reputation updates yet.
+	if self.db.global.DeferCombat and InCombatLockdown() then
+		return;
 	end
 
-	-- If recentReputations doesnt exist, we're done.
-	if not module.recentReputations then return end
-
-	-- Cache globalDB, recentReputations, and watchedFactionData
-	local globalDB = self.db.global;
-	local recentReputations = module.recentReputations;
-	local watchedFactionData = C_Reputation.GetWatchedFactionData();
-
-	-- If auto-switch, let's do that.
-	if globalDB.SwitchTo then
-		module:MenuSetWatchedFactionID(factionID);
-	end
-
-	-- Check if the recent reputation exists.
-	if not recentReputations[reputation] then
-		-- If auto-watch enabled or switchTo, create it regardless.
-		-- Otherwise check if your current watched == current given and then add it.
-		if globalDB.AutoWatch.Enabled or globalDB.SwitchTo or
-		(watchedFactionData and watchedFactionData.factionID == factionID) then
-			recentReputations[reputation] = {
-				amount = 0,
-				factionID = factionID,
-			};
-		else -- If neither auto-watch is on, or you're not currently tracking it, we stop.
-			return;
-		end
-	end
-
-	recentReputations[reputation].amount = recentReputations[reputation].amount + amount;
-
-	if globalDB.AutoWatch.Enabled then
-		if module.AutoWatchUpdate ~= 2 then
-			if (globalDB.AutoWatch.IgnoreInactive and module:GetFactionActive(recentReputations[reputation].factionID)) then return end
-			if (globalDB.AutoWatch.IgnoreBodyguard and BODYGUARD_FACTIONS[recentReputations[reputation].factionID] ~= nil) then return end
-			if (globalDB.AutoWatch.IgnoreGuild and isGuild) then return end
-
-			module.AutoWatchUpdate = 1;
-			module.AutoWatchRecentTimeout = 0.1;
-
-			if (not module.AutoWatchRecent[reputation]) then
-				module.AutoWatchRecent[reputation] = 0;
-			end
-			module.AutoWatchRecent[reputation] = module.AutoWatchRecent[reputation] + amount;
-		end
-	end
+	RunNextFrame(function()
+		module:HandleReputationUpdates();
+	end);
 end
 
 function module:AllowedToBufferUpdate()
@@ -1113,31 +1165,32 @@ function module:AllowedToBufferUpdate()
 end
 
 function module:Update(elapsed)
-	if module.AutoWatchUpdate == 1 then
-		if module.AutoWatchRecentTimeout > 0.0 then
-			module.AutoWatchRecentTimeout = module.AutoWatchRecentTimeout - elapsed;
-		end
+    if module.AutoWatchUpdate == 1 then
+        if module.AutoWatchRecentTimeout > 0.0 then
+            module.AutoWatchRecentTimeout = module.AutoWatchRecentTimeout - elapsed;
+        end
 
-		if module.AutoWatchRecentTimeout <= 0.0 then
-			local selectedFaction = nil;
-			local largestGain = 0;
-			for faction, gain in pairs(module.AutoWatchRecent) do
-				if gain > largestGain then
-					selectedFaction = faction;
-					largestGain = gain;
-				end
-			end
+        if module.AutoWatchRecentTimeout <= 0.0 then
+            local selectedFaction = nil;
+            local largestGain = 0;
 
-			local factionData = C_Reputation.GetWatchedFactionData();
-			if factionData and selectedFaction ~= factionData.name then
-				module:MenuSetWatchedFactionID(factionData.factionID);
-				module.AutoWatchUpdate = 2;
-			else
-				module.AutoWatchUpdate = 0;
-			end
+            for faction, gain in pairs(module.AutoWatchRecent) do
+                if gain > largestGain then
+                    selectedFaction = faction;
+                    largestGain = gain;
+                end
+            end
 
-			module.AutoWatchRecentTimeout = 0;
-			wipe(module.AutoWatchRecent);
-		end
-	end
+            local factionData = C_Reputation.GetWatchedFactionData();
+            if factionData and selectedFaction ~= factionData.name then
+                module:MenuSetWatchedFactionID(factionData.factionID);
+                module.AutoWatchUpdate = 2;
+            else
+                module.AutoWatchUpdate = 0;
+            end
+
+            module.AutoWatchRecentTimeout = 0;
+            wipe(module.AutoWatchRecent);
+        end
+    end
 end
