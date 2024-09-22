@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.3.0] - 2024-09-22
+
+### Added
+- Reputation now has a "Wait for end of combat" option, this is off by default.
+    - It waits to handle all reputation calculations until after all combat is over.
+		- Potentially mitigates freezing/lag when farming lots of reputation-giving mobs consistently.
+
+### Changed
+- Fall clean-up, a lot of code has been rewritten and optimized. In most cases, this should have no noticeable end-user changes.
+
+### Fixed
+-  Safeguard GetFactionInfoByName (previously GetFactionIDByName) factionData being nil (fixes [#16](https://github.com/DJScias/Experiencer2/issues/16)).
+
 ## [6.2.1] - 2024-09-10
 
 ### Changed

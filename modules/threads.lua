@@ -66,7 +66,9 @@ function module:PLAYER_LOGIN()
 end
 
 function module:UNIT_INVENTORY_CHANGED(_, unit)
-	if (unit ~= "player") then return end;
+	if unit ~= "player" then
+		return;
+	end
 
 	module:UpdateHasCloak();
 end
@@ -84,13 +86,16 @@ function module:AllowedToBufferUpdate()
 end
 
 function module:Update(_)
-    if not self.db then return end;
+    local globalDB = self.db and self.db.global;
 
-    if self.db.global.KeepSessionData then
-        local session = self.db.char.session;
-        session.Exists = true;
-        session.Time = time() - self.session.LoginTime;
-        session.TotalThreads = self.session.GainedThreads;
+    if not globalDB then return end;
+
+	if globalDB.KeepSessionData then
+        local charSession = self.db.char.session;
+		local session = self.session;
+        charSession.Exists = true;
+        charSession.Time = time() - session.LoginTime;
+        charSession.TotalThreads = session.GainedThreads;
     end;
 end
 
@@ -104,52 +109,53 @@ function module:CanLevelUp()
 end
 
 function module:GetText()
-	if (module:IsDisabled()) then
-		return "No cloak";
-	end
+    if module:IsDisabled() then
+        return "No cloak";
+    end
 
-	local primaryText 										= {};
-	local secondaryText 									= {};
+    local primaryText = {};
+    local secondaryText = {};
 
-	local threads, cloakLevel, cloakNext, cloakLevelText	= module:GetCloakInfo(false);
+    local threads, cloakLevel, cloakNext, cloakLevelText = module:GetCloakInfo(false);
 
-	local remaining         								= cloakNext - threads;
+    local remaining = cloakNext - threads;
+    local progress = threads / cloakNext;
+    local progressColor = Addon:GetProgressColor(progress);
 
-	local progress          								= threads / cloakNext;
-	local progressColor     								= Addon:GetProgressColor(progress);
-	if cloakLevel == 12 then
-		progressColor = Addon:FinishedProgressColor();
-	end
+    if cloakLevel == 12 then
+        progressColor = Addon:FinishedProgressColor();
+    end
 
-	if(self.db.global.ShowCloakLevel) then
-		tinsert(primaryText,
-			("|cffffd200Cloak Level|r %s"):format(cloakLevelText)
-		);
-	end
+	local globalDB = self.db.global;
+    if globalDB.ShowCloakLevel then
+        tinsert(primaryText,
+            ("|cffffd200Cloak Level|r %s"):format(cloakLevelText)
+        );
+    end
 
-	if cloakLevel == 12 then
-		tinsert(primaryText,
-			("%s%s|r"):format(progressColor, BreakUpLargeNumbers(threads))
-		);
-	else
-		if(self.db.global.ShowRemaining) then
-			tinsert(primaryText,
-				("%s%s|r (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(remaining), progressColor, 100 - progress * 100)
-			);
-		else
-			tinsert(primaryText,
-				("%s%s|r / %s (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(threads), BreakUpLargeNumbers(cloakNext), progressColor, progress * 100)
-			);
-		end
-	end
+    if cloakLevel == 12 then
+        tinsert(primaryText,
+            ("%s%s|r"):format(progressColor, BreakUpLargeNumbers(threads))
+        );
+    else
+        if globalDB.ShowRemaining then
+            tinsert(primaryText,
+                ("%s%s|r (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(remaining), progressColor, 100 - progress * 100)
+            );
+        else
+            tinsert(primaryText,
+                ("%s%s|r / %s (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(threads), BreakUpLargeNumbers(cloakNext), progressColor, progress * 100)
+            );
+        end
+    end
 
-	if (module.session.GainedThreads > 0) then
-		if (self.db.global.ShowedGainedThreads) then
-			tinsert(secondaryText,
-				string.format("+%s |cffffcc00threads|r", BreakUpLargeNumbers(module.session.GainedThreads))
-			);
-		end
-	end
+    if module.session.GainedThreads > 0 then
+        if globalDB.ShowedGainedThreads then
+            tinsert(secondaryText,
+                string.format("+%s |cffffcc00threads|r", BreakUpLargeNumbers(module.session.GainedThreads))
+            );
+        end
+    end
 
 	return table.concat(primaryText, "  "), table.concat(secondaryText, "  ");
 end
@@ -159,82 +165,108 @@ function module:HasChatMessage()
 end
 
 function module:GetChatMessage()
-	local threads, _, cloakNext, cloakLevelText	= module:GetCloakInfo(false);
-	local remaining         					= cloakNext - threads;
+    local threads, _, cloakNext, cloakLevelText = module:GetCloakInfo(false);
+    local remaining = cloakNext - threads;
 
-	local progress          					= threads / cloakNext;
+    local progress = threads / cloakNext;
+    local leveltext = ("Currently cloak level %s"):format(cloakLevelText);
 
-	local leveltext = ("Currently cloak level %s"):format(cloakLevelText);
-
-	return ("%s at %s/%s (%d%%) with %s to go"):format(
-		leveltext,
-		BreakUpLargeNumbers(threads),
-		BreakUpLargeNumbers(cloakNext),
-		math.ceil(progress * 100),
-		BreakUpLargeNumbers(remaining)
-	);
+    return ("%s at %s/%s (%d%%) with %s to go"):format(
+        leveltext,
+        BreakUpLargeNumbers(threads),
+        BreakUpLargeNumbers(cloakNext),
+        math.ceil(progress * 100),
+        BreakUpLargeNumbers(remaining)
+    );
 end
 
 function module:GetBarData()
-	local data    = {};
-	data.id       = nil;
-	data.level    = 0;
-	data.min  	  = 0;
-	data.max  	  = 1;
-	data.current  = 0;
-	data.rested   = nil;
-	data.visual   = nil;
+    local data = {
+        id = nil,
+        level = 0,
+        min = 0,
+        max = 1,
+        current = 0,
+        rested = nil,
+        visual = nil
+    };
 
-	if (not module:IsDisabled()) then
-		data.current, data.level, data.max = module:GetCloakInfo(false);
-	end
+    if not module:IsDisabled() then
+        data.current, data.level, data.max = module:GetCloakInfo(false);
+    end
 
-	return data;
+    return data;
 end
 
 function module:GetOptionsMenu(currentMenu)
-	currentMenu:CreateTitle("Cloak Thread Options");
-	currentMenu:CreateRadio("Show remaining threads", function() return self.db.global.ShowRemaining == true; end, function()
-		self.db.global.ShowRemaining = true;
-		module:RefreshText();
-	end):SetResponse(MenuResponse.Refresh);
-	currentMenu:CreateRadio("Show current and max threads", function() return self.db.global.ShowRemaining == false; end, function()
-		self.db.global.ShowRemaining = false;
-		module:RefreshText();
-	end):SetResponse(MenuResponse.Refresh);
+    local globalDB = self.db.global;  -- Cache self.db.global to globalDB
 
-	currentMenu:CreateDivider();
+    currentMenu:CreateTitle("Cloak Thread Options");
 
-	currentMenu:CreateCheckbox("Show gained threads", function() return self.db.global.ShowedGainedThreads; end, function()
-		self.db.global.ShowedGainedThreads = not self.db.global.ShowedGainedThreads;
-		module:RefreshText();
-	end);
+    currentMenu:CreateRadio("Show remaining threads",
+        function() return globalDB.ShowRemaining == true; end,
+        function()
+            globalDB.ShowRemaining = true;
+            module:RefreshText();
+        end
+    ):SetResponse(MenuResponse.Refresh);
 
-	currentMenu:CreateDivider();
+    currentMenu:CreateRadio("Show current and max threads",
+        function() return globalDB.ShowRemaining == false; end,
+        function()
+            globalDB.ShowRemaining = false;
+            module:RefreshText();
+        end
+    ):SetResponse(MenuResponse.Refresh);
 
-	currentMenu:CreateCheckbox("Remember session data", function() return self.db.global.KeepSessionData; end, function() self.db.global.KeepSessionData = not self.db.global.KeepSessionData; end);
-	currentMenu:CreateButton("Reset session", function() module:ResetSession();	end):SetResponse(MenuResponse.Refresh);
+    currentMenu:CreateDivider();
 
-	currentMenu:CreateDivider();
+    currentMenu:CreateCheckbox("Show gained threads",
+        function() return globalDB.ShowedGainedThreads; end,
+        function()
+            globalDB.ShowedGainedThreads = not globalDB.ShowedGainedThreads;
+            module:RefreshText();
+        end
+    );
 
-	currentMenu:CreateCheckbox("Show cloak level", function() return self.db.global.ShowCloakLevel; end, function()
-		self.db.global.ShowCloakLevel = not self.db.global.ShowCloakLevel;
-		module:RefreshText();
-	end);
+    currentMenu:CreateDivider();
+
+    currentMenu:CreateCheckbox("Remember session data",
+        function() return globalDB.KeepSessionData; end,
+        function() 
+            globalDB.KeepSessionData = not globalDB.KeepSessionData;
+        end
+    );
+
+    currentMenu:CreateButton("Reset session",
+        function() 
+            module:ResetSession();
+        end
+    ):SetResponse(MenuResponse.Refresh);
+
+    currentMenu:CreateDivider();
+
+    currentMenu:CreateCheckbox("Show cloak level",
+        function() return globalDB.ShowCloakLevel; end,
+        function()
+            globalDB.ShowCloakLevel = not globalDB.ShowCloakLevel;
+            module:RefreshText();
+        end
+    );
 end
 
 ------------------------------------------
 
 function module:CURRENCY_DISPLAY_UPDATE(_, currencyType, _, quantityChange)
-	if not currencyType then return end;
+    if not currencyType then return; end
 
-	if currencyType == 3001 or (currencyType >= 2853 and currencyType <= 2860) then
-		-- We set a 0.5 timer as the cloak needs a small bit of time to update its values.
-		C_Timer.After(0.5, function()
-			module.session.GainedThreads = module.session.GainedThreads + quantityChange;
-			module:Refresh();
-		end)
-	end
+    if currencyType == 3001 or (currencyType >= 2853 and currencyType <= 2860) then
+        -- We set a 0.5 timer as the cloak needs a small bit of time to update its values.
+        C_Timer.After(0.5, function()
+            module.session.GainedThreads = module.session.GainedThreads + quantityChange;
+            module:Refresh();
+        end);
+    end
 end
 
 function module:RestoreSession()
@@ -245,7 +277,6 @@ function module:RestoreSession()
     module.session.LoginTime 		= module.session.LoginTime - data.Time;
     module.session.GainedThreads 	= data.TotalThreads;
 end
-
 
 function module:ResetSession()
 	module.session = {
@@ -263,44 +294,44 @@ function module:ResetSession()
 end
 
 function module:GetCloakInfo(isInitialLogin)
-	local c = {0,1,2,3,4,5,6,7,148};
-	local threads = 0;
-	local cloakLevel = 0;
-	local cloakLevelText = "0";
-	local cloakNext = 40;
+    local c = {0, 1, 2, 3, 4, 5, 6, 7, 148};
+    local threads = 0;
+    local cloakLevel = 0;
+    local cloakLevelText = "0";
+    local cloakNext = 40;
 
-	for i = 1, #c do
-		threads = threads + C_CurrencyInfo.GetCurrencyInfo(2853 + c[i]).quantity;
-	end
-	GATHERED_THREADS = threads;
+    for i = 1, #c do
+        threads = threads + C_CurrencyInfo.GetCurrencyInfo(2853 + c[i]).quantity;
+    end
+    GATHERED_THREADS = threads;
 
-	local levels = {
-		{threshold = 4200, text = "XII", level = 12},
-		{threshold = 2200, text = "XI", level = 11},
-		{threshold = 700, text = "X", level = 10},
-		{threshold = 600, text = "IX", level = 9},
-		{threshold = 500, text = "VIII", level = 8},
-		{threshold = 400, text = "VII", level = 7},
-		{threshold = 300, text = "VI", level = 6},
-		{threshold = 250, text = "V", level = 5},
-		{threshold = 200, text = "IV", level = 4},
-		{threshold = 150, text = "III", level = 3},
-		{threshold = 100, text = "II", level = 2},
-		{threshold = 40, text = "I", level = 1},
-	}
+    local levels = {
+        {threshold = 4200, text = "XII", level = 12},
+        {threshold = 2200, text = "XI", level = 11},
+        {threshold = 700, text = "X", level = 10},
+        {threshold = 600, text = "IX", level = 9},
+        {threshold = 500, text = "VIII", level = 8},
+        {threshold = 400, text = "VII", level = 7},
+        {threshold = 300, text = "VI", level = 6},
+        {threshold = 250, text = "V", level = 5},
+        {threshold = 200, text = "IV", level = 4},
+        {threshold = 150, text = "III", level = 3},
+        {threshold = 100, text = "II", level = 2},
+        {threshold = 40, text = "I", level = 1},
+    };
 
-	for i, v in ipairs(levels) do
-		if GATHERED_THREADS > v.threshold then
-			cloakLevelText = v.text
-			cloakLevel = v.level
-			cloakNext = levels[i - 1] and levels[i - 1].threshold or GATHERED_THREADS
-			break
-		end
-	end
+    for i, v in ipairs(levels) do
+        if GATHERED_THREADS > v.threshold then
+            cloakLevelText = v.text;
+            cloakLevel = v.level;
+            cloakNext = levels[i - 1] and levels[i - 1].threshold or GATHERED_THREADS;
+            break;
+        end
+    end
 
-	if isInitialLogin then
-		module.ready = true;
-	end
+    if isInitialLogin then
+        module.ready = true;
+    end
 
-	return GATHERED_THREADS, cloakLevel, cloakNext, cloakLevelText;
+    return GATHERED_THREADS, cloakLevel, cloakNext, cloakLevelText;
 end

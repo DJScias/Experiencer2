@@ -50,21 +50,22 @@ end
 
 function module:GetText()
 	local primaryText = {};
-	
+
 	local honorlevel 	    = UnitHonorLevel("player");
 	local honor, honormax   = UnitHonor("player"), UnitHonorMax("player");
 	local remaining         = honormax - honor;
-	
+
 	local progress          = honor / (honormax > 0 and honormax or 1);
 	local progressColor     = Addon:GetProgressColor(progress);
-	
-	if(self.db.global.ShowHonorLevel) then
+
+	local globalDB = self.db.global;
+	if(globalDB.ShowHonorLevel) then
 		tinsert(primaryText, 
 			("|cffffd200Honor Level|r %d"):format(honorlevel)
 		);
 	end
-	
-	if(self.db.global.ShowRemaining) then
+
+	if(globalDB.ShowRemaining) then
 		tinsert(primaryText,
 			("%s%s|r (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(remaining), progressColor, 100 - progress * 100)
 		);
@@ -73,7 +74,7 @@ function module:GetText()
 			("%s%s|r / %s (%s%.1f|r%%)"):format(progressColor, BreakUpLargeNumbers(honor), BreakUpLargeNumbers(honormax), progressColor, progress * 100)
 		);
 	end
-	
+
 	return table.concat(primaryText, "  "), nil;
 end
 
@@ -85,14 +86,13 @@ function module:GetChatMessage()
 	local level 	        = UnitHonorLevel("player");
 	local honor, honormax   = UnitHonor("player"), UnitHonorMax("player");
 	local remaining         = honormax - honor;
-	
-	local progress          = honor / (honormax > 0 and honormax or 1);
-	
-	local leveltext = ("Currently honor level %d"):format(level);
-	
+
+	local progress    = honor / (honormax > 0 and honormax or 1);
+	local levelText   = ("Currently honor level %d"):format(level);
+
 	return ("%s at %s/%s (%d%%) with %s to go"):format(
-		leveltext,
-		BreakUpLargeNumbers(honor),	
+		levelText,
+		BreakUpLargeNumbers(honor),
 		BreakUpLargeNumbers(honormax),
 		math.ceil(progress * 100),
 		BreakUpLargeNumbers(remaining)
@@ -103,37 +103,51 @@ function module:GetBarData()
 	local level 	        = UnitHonorLevel("player");
 	local honor, honormax   = UnitHonor("player"), UnitHonorMax("player");
 	local remaining         = honormax - honor;
-	
-	local progress          = honor / (honormax > 0 and honormax or 1);
-	local progressColor     = Addon:GetProgressColor(progress);
-	
-	local data    = {};
-	data.id       = nil;
-	data.level    = level;
-	
-	data.min  	  = 0;
-	data.max  	  = honormax;
-	data.current  = honor;
-	
-	data.visual   = nil;
-	
+
+	local progress  = honor / (honormax > 0 and honormax or 1);
+	local progressColor = Addon:GetProgressColor(progress);
+
+	local data = {
+		id      = nil,
+		level   = level,
+		min     = 0,
+		max     = honormax,
+		current = honor,
+		visual  = nil
+	};
+
 	return data;
 end
 
 function module:GetOptionsMenu(currentMenu)
+	local globalDB = self.db.global;
+
 	currentMenu:CreateTitle("Honor Options");
-	currentMenu:CreateRadio("Show remaining honor", function() return self.db.global.ShowRemaining == true; end, function()
-		self.db.global.ShowRemaining = true;
-		module:RefreshText();
-	end):SetResponse(MenuResponse.Refresh);
-	currentMenu:CreateRadio("Show current and max honor", function() return self.db.global.ShowRemaining == false; end, function()
-		self.db.global.ShowRemaining = false;
-		module:RefreshText();
-	end):SetResponse(MenuResponse.Refresh);
+	currentMenu:CreateRadio("Show remaining honor", 
+		function() return globalDB.ShowRemaining == true end,
+		function()
+			globalDB.ShowRemaining = true;
+			module:RefreshText();
+		end
+	):SetResponse(MenuResponse.Refresh);
+
+	currentMenu:CreateRadio("Show current and max honor",
+		function() return globalDB.ShowRemaining == false end,
+		function()
+			globalDB.ShowRemaining = false;
+			module:RefreshText();
+		end
+	):SetResponse(MenuResponse.Refresh);
 
 	currentMenu:CreateDivider();
 
-	currentMenu:CreateCheckbox("Show honor level", function() return self.db.global.ShowHonorLevel; end, function() self.db.global.ShowHonorLevel = not self.db.global.ShowHonorLevel; module:RefreshText(); end);
+	currentMenu:CreateCheckbox("Show honor level",
+		function() return globalDB.ShowHonorLevel end,
+		function()
+			globalDB.ShowHonorLevel = not globalDB.ShowHonorLevel;
+			module:RefreshText();
+		end
+	);
 end
 
 ------------------------------------------

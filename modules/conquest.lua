@@ -43,7 +43,7 @@ end
 
 function module:GetConquestLevelInfo()
 	local CONQUEST_QUESTLINE_ID = 782;
-	local quests = C_QuestLine.GetQuestLineQuests(CONQUEST_QUESTLINE_ID)
+	local quests = C_QuestLine.GetQuestLineQuests(CONQUEST_QUESTLINE_ID);
 	local currentQuestID = quests[1];
 	local stageIndex = 1;
 	for _, questID in ipairs(quests) do
@@ -149,13 +149,14 @@ function module:GetBarData()
 end
 
 function module:GetOptionsMenu(currentMenu)
+	local globalDB = self.db.global;
 	currentMenu:CreateTitle("Conquest Options");
-	currentMenu:CreateRadio("Show remaining conquest", function() return self.db.global.ShowRemaining == true; end, function()
-		self.db.global.ShowRemaining = true;
+	currentMenu:CreateRadio("Show remaining conquest", function() return globalDB.ShowRemaining == true; end, function()
+		globalDB.ShowRemaining = true;
 		module:RefreshText();
 	end):SetResponse(MenuResponse.Refresh);
-	currentMenu:CreateRadio("Show current and conquest", function() return self.db.global.ShowRemaining == false; end, function()
-		self.db.global.ShowRemaining = false;
+	currentMenu:CreateRadio("Show current and conquest", function() return globalDB.ShowRemaining == false; end, function()
+		globalDB.ShowRemaining = false;
 		module:RefreshText();
 	end):SetResponse(MenuResponse.Refresh);
 end

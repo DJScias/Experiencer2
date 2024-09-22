@@ -29,7 +29,7 @@ function module:Initialize()
 	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED");
 	module.apInSession = 0;
 
-	if (UnitLevel("player") < 10) then
+	if UnitLevel("player") < 10 then
 		self:RegisterEvent("PLAYER_LEVEL_UP");
 		module.hasArtifact = false;
 	else
@@ -41,7 +41,7 @@ function module:Initialize()
 end
 
 function module:PLAYER_LEVEL_UP(_, level)
-	if (level >= 10) then
+	if level >= 10 then
 		self:RegisterEvent("UNIT_INVENTORY_CHANGED");
 		self:RegisterEvent("QUEST_LOG_UPDATE");
 		self:UnregisterEvent("PLAYER_LEVEL_UP");
@@ -52,14 +52,14 @@ local HEART_OF_AZEROTH_ITEM_ID = 158075;
 local HEART_OF_AZEROTH_QUEST_ID = 51211;
 
 function module:QUEST_LOG_UPDATE(_)
-	if (C_QuestLog.IsQuestFlaggedCompleted(HEART_OF_AZEROTH_QUEST_ID)) then
+	if C_QuestLog.IsQuestFlaggedCompleted(HEART_OF_AZEROTH_QUEST_ID) then
 		module.hasArtifact = true;
 		self:UnregisterEvent("QUEST_LOG_UPDATE");
 	end
 end
 
 function module:UNIT_INVENTORY_CHANGED(_, unit)
-	if (unit ~= "player") then return end
+	if unit ~= "player" then return end
 	module:UpdateHasArtifact();
 	module:Refresh();
 end
@@ -70,15 +70,15 @@ end
 
 function module:UpdateHasArtifact()
 	local playerLevel = UnitLevel("player");
-	if (playerLevel < 10) then
+	if playerLevel < 10 then
 		module.hasArtifact = false;
 	else
 		local hasArtifact = C_AzeriteItem.HasActiveAzeriteItem();
-		if (not hasArtifact) then
+		if not hasArtifact then
 			-- C_AzeriteItem.HasActiveAzeriteItem may return false
 			-- during initial game loading, try a fallback to item id
 			local itemId = GetInventoryItemID("player", 2);
-			if (itemId == HEART_OF_AZEROTH_ITEM_ID) then
+			if itemId == HEART_OF_AZEROTH_ITEM_ID then
 				hasArtifact = true;
 			end
 		end
@@ -100,7 +100,7 @@ end
 
 function module:FormatNumber(value)
 	assert(value ~= nil);
-	if(self.db.global.AbbreviateLargeValues) then
+	if self.db.global.AbbreviateLargeValues then
 		return Addon:FormatNumberFancy(value);
 	end
 	return BreakUpLargeNumbers(value);
@@ -117,7 +117,7 @@ function module:GetArtifactName()
 	local itemID = HEART_OF_AZEROTH_ITEM_ID;
 
 	local name = C_Item.GetItemInfo(itemID) and C_Item.GetItemInfo(itemID).itemName;
-	if (not name) then
+	if not name then
 		self:RegisterEvent("GET_ITEM_INFO_RECEIVED");
 	else
 		self:UnregisterEvent("GET_ITEM_INFO_RECEIVED");
@@ -126,14 +126,14 @@ function module:GetArtifactName()
 end
 
 function module:GetText()
-	if (module:IsDisabled()) then
+	if module:IsDisabled() then
 		return "No artifact";
 	end
 
 	local primaryText = {};
 	local secondaryText = {};
 
-	local data = self:GetBarData();
+	local data              = self:GetBarData();
 	local remaining         = data.max - data.current;
 	local progress          = data.current / data.max;
 	local progressColor     = Addon:GetProgressColor(progress);
@@ -143,7 +143,8 @@ function module:GetText()
 		("|cffffecB3%s|r (Level %d):"):format(name or "", data.level)
 	);
 
-	if(self.db.global.ShowRemaining) then
+	local globalDB = self.db.global;
+	if globalDB.ShowRemaining then
 		tinsert(primaryText,
 			("%s%s|r (%s%.1f|r%%)"):format(progressColor, module:FormatNumber(remaining), progressColor, 100 - progress * 100)
 		);
@@ -153,7 +154,7 @@ function module:GetText()
 		);
 	end
 
-	if(self.db.global.ShowGainedAP and module.apInSession > 0) then
+	if globalDB.ShowGainedAP and module.apInSession > 0 then
 		tinsert(secondaryText, string.format("+%s |cffffcc00AP|r", BreakUpLargeNumbers(module.apInSession)));
 	end
 
@@ -190,14 +191,14 @@ function module:GetBarData()
 	local data    = {};
 	data.id       = nil;
 	data.level    = 0;
-	data.min  	  = 0;
-	data.max  	  = 1;
+	data.min      = 0;
+	data.max      = 1;
 	data.current  = 0;
 	data.rested   = nil;
 	data.visual   = nil;
 
 	local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem();
-	if(C_AzeriteItem.HasActiveAzeriteItem() and azeriteItemLocation) then
+	if C_AzeriteItem.HasActiveAzeriteItem() and azeriteItemLocation then
 		local currentXP, totalLevelXP = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItemLocation);
 		local currentLevel = C_AzeriteItem.GetPowerLevel(azeriteItemLocation);
 
@@ -205,27 +206,35 @@ function module:GetBarData()
 		data.level    = currentLevel;
 
 		data.current  = currentXP;
-		data.max  	  = totalLevelXP;
+		data.max      = totalLevelXP;
 	end
 
 	return data;
 end
 
 function module:GetOptionsMenu(currentMenu)
+	local globalDB = self.db.global;
+
 	currentMenu:CreateTitle("Artifact Options");
-	currentMenu:CreateRadio("Show remaining artifact power", function() return self.db.global.ShowRemaining == true; end, function()
-		self.db.global.ShowRemaining = true;
+	currentMenu:CreateRadio("Show remaining artifact power", function() return globalDB.ShowRemaining == true; end, function()
+		globalDB.ShowRemaining = true;
 		module:RefreshText();
 	end):SetResponse(MenuResponse.Refresh);
-	currentMenu:CreateRadio("Show current and max artifact power", function() return self.db.global.ShowRemaining == false; end, function()
-		self.db.global.ShowRemaining = false;
+	currentMenu:CreateRadio("Show current and max artifact power", function() return globalDB.ShowRemaining == false; end, function()
+		globalDB.ShowRemaining = false;
 		module:RefreshText();
 	end):SetResponse(MenuResponse.Refresh);
 
 	currentMenu:CreateDivider();
 
-	currentMenu:CreateCheckbox("Show amount of Artififact Power gained in current session", function() return self.db.global.ShowGainedAP; end, function() self.db.global.ShowGainedAP = not self.db.global.ShowGainedAP; module:RefreshText(); end);
-	currentMenu:CreateCheckbox("Abbreviate large numbers", function() return self.db.global.AbbreviateLargeValues; end, function() self.db.global.AbbreviateLargeValues = not self.db.global.AbbreviateLargeValues; module:RefreshText(); end);
+	currentMenu:CreateCheckbox("Show amount of Artifact Power gained in current session", function() return globalDB.ShowGainedAP; end, function() 
+		globalDB.ShowGainedAP = not globalDB.ShowGainedAP;
+		module:RefreshText();
+	end);
+	currentMenu:CreateCheckbox("Abbreviate large numbers", function() return globalDB.AbbreviateLargeValues; end, function() 
+		globalDB.AbbreviateLargeValues = not globalDB.AbbreviateLargeValues;
+		module:RefreshText();
+	end);
 end
 
 ------------------------------------------
@@ -235,7 +244,7 @@ function module:GET_ITEM_INFO_RECEIVED()
 end
 
 function module:AZERITE_ITEM_EXPERIENCE_CHANGED(_, _, oldAP, newAP)
-	if (oldAP ~= nil and newAP ~= nil) then
+	if oldAP ~= nil and newAP ~= nil then
 		module.apInSession = module.apInSession + (newAP - oldAP);
 	end
 	module:Refresh();
