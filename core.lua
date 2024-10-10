@@ -544,7 +544,7 @@ end
 
 function ExperiencerModuleBarsMixin:TriggerBufferedUpdate(instant)
 	if not self.module then
-		return
+		return;
 	end
 
 	local data = self.module:GetBarData();
@@ -576,30 +576,34 @@ function ExperiencerModuleBarsMixin:TriggerBufferedUpdate(instant)
 			local current = data.current;
 			local previous = self.previousData.current;
 
-			if not self.hasModuleChanged and self.previousData.level < data.level then
+			if self.previousData.level < data.level then
 				current = current + self.previousData.max;
 			end
 
 			local diff = (current - previous) / data.max;
-			local speed = math.max(1, math.min(10, diff * 1.2 + 1.0));
-			speed = speed * speed;
+			local speed = math.max(1, math.min(10, diff * 1.2 + 1.0)^2);
 			self:SetAnimationSpeed(speed);
 		end
+	end
 
-		self.main:SetAnimatedValues(data.current, data.min, data.max, data.level);
-	else
-		self.main:SetAnimatedValues(data.current, data.min, data.max, data.level);
+	self.main:SetAnimatedValues(data.current, data.min, data.max, data.level);
+
+	if not (valueHasChanged and not self.hasModuleChanged and not instant and not isLoss) then
 		self.main:ProcessChangesInstantly();
 	end
 
-	if (not instant and valueHasChanged and not self.hasModuleChanged) then
-		if (not isLoss) then
-			self.change.fadegain_in:Stop();
-			self.change.fadegain_out:Stop();
-			self.change.fadegain_out:Play();
+	if not instant and valueHasChanged and not self.hasModuleChanged then
+		if not isLoss then
+			local fadegain = self.change;
+
+			fadegain.fadegain_in:Stop();
+			fadegain.fadegain_out:Stop();
+			fadegain.fadegain_out:Play();
 		end
-		self.main.spark.fade:Stop();
-		self.main.spark.fade:Play();
+		local sparkFade = self.main.spark.fade;
+
+		sparkFade:Stop();
+		sparkFade:Play();
 	end
 
 	self.previousData = data;
@@ -658,7 +662,17 @@ function ExperiencerModuleBarsMixin:Refresh(instant)
 
 	local data;
 	if self.module and self.module.initialized then
-		data = self.module:GetBarData();
+		local barData = self.module:GetBarData() or {};  -- Ensure barData is a table even if GetBarData() is nil.
+
+		data = {
+			id      = barData.id,                       -- No default for id as nil might be valid.
+			level   = barData.level or 0,               -- Default to 0 if level is nil.
+			min     = barData.min or 0,                 -- Default to 0 if min is nil.
+			max     = barData.max or 1,                 -- Default to 1 if max is nil.
+			current = barData.current or 0,             -- Default to 0 if current is nil.
+			rested  = barData.rested,                   -- No default for rested as nil might be valid.
+			visual  = barData.visual                    -- No default for visual as nil might be valid.
+		};
 	else
 		data          = {};
 		data.id       = nil;
@@ -677,22 +691,20 @@ function ExperiencerModuleBarsMixin:Refresh(instant)
 
 	self.hasDataIdChanged = self.previousData and self.previousData.id ~= data.id;
 
-	if self.previousData then
-		if not self.hasModuleChanged and not self.hasDataIdChanged then
-			if (data.level == self.previousData.level and data.current < self.previousData.current) then
-				isLoss = true;
-				changeCurrent = self.previousData.current;
-			end
+	if self.previousData and not self.hasModuleChanged and not self.hasDataIdChanged then
+		local prevLevel, prevCurrent = self.previousData.level, self.previousData.current;
 
-			if (data.level < self.previousData.level) then
-				isLoss = true;
-				changeCurrent = data.max;
-			end
-
-			if (data.current == self.previousData.current) then
-				valueHasChanged = false;
-			end
+		if data.level == prevLevel and data.current < prevCurrent then
+			isLoss = true;
+			changeCurrent = prevCurrent;
 		end
+
+		if data.level < prevLevel then
+			isLoss = true;
+			changeCurrent = data.max;
+		end
+
+		valueHasChanged = (data.current ~= prevCurrent);
 	end
 
 	if instant or isLoss then
