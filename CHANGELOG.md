@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+Nil-guard potential bar data, ref #17
+
+## [6.3.1] - Unreleased
+
+### Changed
+- Optimize ExperiencerModuleBarsMixin:TriggerBufferedUpdate.
+
+### Fixed
+- Safeguard reputation GetBarData being nil (fixes [#17](https://github.com/DJScias/Experiencer2/issues/17)).
+
 ## [6.3.0] - 2024-09-22
 
 ### Added
@@ -16,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fall clean-up, a lot of code has been rewritten and optimized. In most cases, this should have no noticeable end-user changes.
 
 ### Fixed
--  Safeguard GetFactionInfoByName (previously GetFactionIDByName) factionData being nil (fixes [#16](https://github.com/DJScias/Experiencer2/issues/16)).
+- Safeguard GetFactionInfoByName (previously GetFactionIDByName) factionData being nil (fixes [#16](https://github.com/DJScias/Experiencer2/issues/16)).
 
 ## [6.2.1] - 2024-09-10
 
