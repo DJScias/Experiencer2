@@ -14,6 +14,7 @@ Nil-guard potential bar data, ref #17
 
 ### Fixed
 - Safeguard reputation GetBarData being nil (fixes [#17](https://github.com/DJScias/Experiencer2/issues/17)).
+- Safeguard ExperiencerModuleBarsMixin:Refresh against potential nil data values.
 
 ## [6.3.0] - 2024-09-22
 
