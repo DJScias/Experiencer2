@@ -401,10 +401,10 @@ function module:GetBarData()
 			minReputation = 0;
 			isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
 		else
-			if reputationInfo and reputationInfo.friendshipFactionID > 0 and not reputationInfo.nextThreshold then
-				isCapped = true;
-			elseif standing == MAX_REPUTATION_REACTION then
-				isCapped = true;
+			if reputationInfo and reputationInfo.friendshipFactionID > 0 then
+				if not reputationInfo.nextThreshold or reputationInfo.standing == MAX_REPUTATION_REACTION then
+					isCapped = true;
+				end
 			end
 		end
 
@@ -421,14 +421,14 @@ function module:GetBarData()
 		data.level = standing;
 
 		if not isCapped then
-			data.min = minReputation;
-			data.max = maxReputation;
-			data.current = currentReputation;
+			data.min = minReputation or 0;
+			data.max = maxReputation or 1;
+			data.current = currentReputation or 1;
 			if majorFactionData and not isParagon then
-				data.max = majorFactionData.renownLevelThreshold;
+				data.max = majorFactionData.renownLevelThreshold or 1;
 			elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
-				data.min = reputationInfo.reactionThreshold;
-				data.max = reputationInfo.nextThreshold;
+				data.min = reputationInfo.reactionThreshold or 0;
+				data.max = reputationInfo.nextThreshold or 1;
 			end
 		else
 			data.min = 0;
