@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Nil-guard potential bar data, ref #17
 
-## [6.3.1] - Unreleased
+## [6.3.1] - 2024-10-16
 
 ### Changed
 - Optimize ExperiencerModuleBarsMixin:TriggerBufferedUpdate.
@@ -15,6 +15,7 @@ Nil-guard potential bar data, ref #17
 ### Fixed
 - Safeguard reputation GetBarData being nil (fixes [#17](https://github.com/DJScias/Experiencer2/issues/17)).
 - Safeguard ExperiencerModuleBarsMixin:Refresh against potential nil data values.
+- Safeguard ExperiencerModuleBarsMixin:TriggerBufferedUpdate against potential nil data values.
 
 ## [6.3.0] - 2024-09-22
 

@@ -547,7 +547,19 @@ function ExperiencerModuleBarsMixin:TriggerBufferedUpdate(instant)
 		return;
 	end
 
-	local data = self.module:GetBarData();
+	local data;
+	local barData = self.module:GetBarData() or {}; -- Ensure barData is a table even if GetBarData() is nil.
+
+	data = {
+		id      = barData.id,                       -- No default for id as nil might be valid.
+		level   = barData.level or 0,               -- Default to 0 if level is nil.
+		min     = barData.min or 0,                 -- Default to 0 if min is nil.
+		max     = barData.max or 1,                 -- Default to 1 if max is nil.
+		current = barData.current or 0,             -- Default to 0 if current is nil.
+		rested  = barData.rested,                   -- No default for rested as nil might be valid.
+		visual  = barData.visual                    -- No default for visual as nil might be valid.
+	};
+
 	local valueHasChanged = true;
 	local isLoss = false;
 
