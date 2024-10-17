@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Safeguard reputation GetBarData being nil (fixes [#17](https://github.com/DJScias/Experiencer2/issues/17)).
+    - Thanks to Github user NoShotz for helping track this down.
 - Safeguard ExperiencerModuleBarsMixin:Refresh against potential nil data values.
 - Safeguard ExperiencerModuleBarsMixin:TriggerBufferedUpdate against potential nil data values.
 
