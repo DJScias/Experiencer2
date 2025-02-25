@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.3.4] - 2025-02-25
+
+### Added
+- 11.1.0 TOC addon list category (Quests) and group (Experiencer2).
+    - This puts Experiencer2 into the right Category (and Group) for 11.1's addon list.
+
+### Changed
+- 11.1.0 TOC bump.
+
 ## [6.3.3] - 2024-12-18
 
 ### Changed
