@@ -12,29 +12,29 @@ local module = Addon:RegisterModule("experience", {
 	order       = 1,
 	active      = true,
 	savedvars   = {
-		char = {
-			session = {
-				Exists = false,
-				Time = 0,
-				TotalXP = 0,
-				AverageQuestXP = 0,
-			},
+	char = {
+		session = {
+			Exists = false,
+			Time = 0,
+			TotalXP = 0,
+			AverageQuestXP = 0,
 		},
-		global = {
-			ShowRemaining = true,
-			ShowGainedXP = true,
-			ShowHourlyXP = true,
-			ShowTimeToLevel = true,
-			ShowQuestsToLevel = true,
-			KeepSessionData = true,
+	},
+	global = {
+		ShowRemaining = true,
+		ShowGainedXP = true,
+		ShowHourlyXP = true,
+		ShowTimeToLevel = true,
+		ShowQuestsToLevel = true,
+		KeepSessionData = true,
 
-			QuestXP = {
-				ShowText = true,
-				AddIncomplete = false,
-				IncludeAccountWide = false,
-				ShowVisualizer = true,
-			},
+		QuestXP = {
+			ShowText = true,
+			AddIncomplete = false,
+			IncludeAccountWide = false,
+			ShowVisualizer = true,
 		},
+	},
 	},
 });
 
@@ -115,26 +115,25 @@ function module:Update(elapsed)
 	local lastPaused = self.session.Paused;
 	local charDB = self.db.char;
 	local currentSession = self.session;
+
 	currentSession.Paused = UnitIsAFK("player");
 
-	if (currentSession.Paused and lastPaused ~= currentSession.Paused) then
-		self:Refresh();
-	elseif (not currentSession.Paused and lastPaused ~= currentSession.Paused) then
+	if currentSession.Paused then
+		currentSession.PausedTime = currentSession.PausedTime + elapsed;
+		if lastPaused ~= currentSession.Paused then
+			self:Refresh();
+		end
+	elseif lastPaused ~= currentSession.Paused then
 		currentSession.LoginTime = currentSession.LoginTime + math.floor(currentSession.PausedTime);
 		currentSession.PausedTime = 0;
 	end
 
-	if (currentSession.Paused) then
-		currentSession.PausedTime = currentSession.PausedTime + elapsed;
-	end
-
-	if (self.db == nil) then
+	if self.db == nil then
 		return;
 	end
 
-	if (self.db.global.KeepSessionData) then
+	if self.db.global.KeepSessionData then
 		charDB.session.Exists = true;
-
 		charDB.session.Time = time() - (currentSession.LoginTime + math.floor(currentSession.PausedTime));
 		charDB.session.TotalXP = currentSession.GainedXP;
 		charDB.session.AverageQuestXP = currentSession.AverageQuestXP;
@@ -241,7 +240,7 @@ function module:GetChatMessage()
 		UnitLevel("player"),
 		current_xp_text,
 		max_xp_text, 
-		math.ceil((current_xp / max_xp) * 100), 
+		math.ceil((current_xp / max_xp) * 100),
 		remaining_xp_text, 
 		rested_xp_percent
 	);
@@ -393,9 +392,9 @@ function module:CalculateHourlyXP()
 end
 
 function module:GetGroupType()
-	if (IsInRaid()) then
+	if IsInRaid() then
 		return GROUP_TYPE.RAID;
-	elseif (IsInGroup()) then
+	elseif IsInGroup() then
 		return GROUP_TYPE.PARTY;
 	end
 
@@ -407,7 +406,7 @@ function module:GetUnitID(group_type, index)
 	if group_type == GROUP_TYPE.SOLO or group_type == GROUP_TYPE.PARTY then
 		return partyUnitID[index];
 	elseif group_type == GROUP_TYPE.RAID then
-		return string.format("raid%d", index);
+		return "raid" .. index;
 	end
 
 	return nil;
@@ -416,10 +415,7 @@ end
 local function GroupIterator()
 	local index = 0;
 	local groupType = module:GetGroupType();
-	local numGroupMembers = GetNumGroupMembers();
-	if groupType == GROUP_TYPE.SOLO then
-		numGroupMembers = 1;
-	end
+	local numGroupMembers = (groupType == GROUP_TYPE.SOLO) and 1 or GetNumGroupMembers();
 
 	return function()
 		index = index + 1;
@@ -429,6 +425,7 @@ local function GroupIterator()
 	end
 end
 
+--[[ Bonus EXP from RAF was removed sometime in Dragonflight.
 function module:HasRecruitingBonus()
 	local playerLevel = UnitLevel("player");
 
@@ -443,35 +440,39 @@ function module:HasRecruitingBonus()
 
 	return false;
 end
+]]
 
 function module:CalculateXPMultiplier()
 	local multiplier = 1.0;
 
-	-- Heirloom xp bonus is now factored in quest log
-	--for _, slotID in ipairs(HEIRLOOM_SLOTS) do
-	--	local link = GetInventoryItemLink("player", slotID);
+	--[[ Heirloom xp bonus does no longer exist, it now slows down rested XP usage.
+	for _, slotID in ipairs(HEIRLOOM_SLOTS) do
+		local link = GetInventoryItemLink("player", slotID);
 
-	--	if link then
-	--		local _, _, itemRarity, _, _, _, _, _, itemEquipLoc = GetItemInfo(link);
+		if link then
+			local _, _, itemRarity, _, _, _, _, _, itemEquipLoc = GetItemInfo(link);
 
-	--		if itemRarity == 7 then
-	--			local itemID = tonumber(strmatch(link, "item:(%d*)")) or 0;
-	--			local itemMultiplier = HEIRLOOM_ITEMXP[itemID] or HEIRLOOM_ITEMXP[itemEquipLoc];
+			if itemRarity == 7 then
+				local itemID = tonumber(strmatch(link, "item:(%d*)")) or 0;
+				local itemMultiplier = HEIRLOOM_ITEMXP[itemID] or HEIRLOOM_ITEMXP[itemEquipLoc];
 
-	--			multiplier = multiplier + itemMultiplier;
-	--		end
-	--	end
-	--end
+				multiplier = multiplier + itemMultiplier;
+			end
+		end
+	end
+	]]
 
+	--[[ Bonus EXP from RAF was removed sometime in Dragonflight.
 	if module:HasRecruitingBonus() then
 		multiplier = math.max(1.5, multiplier);
 	end
+	]]
 
 	local playerLevel = UnitLevel("player");
 
 	for buffSpellID, buffMultiplier in pairs(BUFF_MULTIPLIERS) do
 		if Addon:PlayerHasBuff(buffSpellID) then
-			if not buffMultiplier.maxlevel or (buffMultiplier.maxlevel and playerLevel <= buffMultiplier.maxlevel) then
+			if not buffMultiplier.maxlevel or playerLevel <= buffMultiplier.maxlevel then
 				multiplier = multiplier + buffMultiplier.multiplier;
 			end
 		end
@@ -558,10 +559,6 @@ function module:CHAT_MSG_SYSTEM(_, msg)
 	if module.session.QuestsToLevel > 0 and xp_amount > 0 then
 		local quests_text = string.format("%d more quests to level", module.session.QuestsToLevel);
 		DEFAULT_CHAT_FRAME:AddMessage("|cffffff00" .. quests_text .. ".|r");
-
-		if Parrot then
-			Parrot:ShowMessage(quests_text, "Errors", false, 1.0, 1.0, 0.1);
-		end
 	end
 end
 
@@ -571,7 +568,7 @@ function module:PLAYER_XP_UPDATE()
 	local gained = current_xp - module.session.LastXP;
 
 	if gained < 0 then
-		gained = module.session.MaxXP - module.session.LastXP + current_xp;
+		gained = (module.session.MaxXP - module.session.LastXP) + current_xp;
 	end
 
 	module.session.GainedXP = module.session.GainedXP + gained;
@@ -593,6 +590,7 @@ end
 function module:PLAYER_LEVEL_UP(_, level)
 	if module:IsPlayerMaxLevel(level) then
 		Addon:CheckDisabledStatus();
+		module.playerCanLevel = false;
 	else
 		local max_xp = UnitXPMax("player");
 		local current_xp = UnitXP("player");
@@ -600,7 +598,7 @@ function module:PLAYER_LEVEL_UP(_, level)
 		module.session.MaxXP = max_xp;
 		local remaining_xp = max_xp - current_xp;
 		module.session.QuestsToLevel = ceil(remaining_xp / module.session.AverageQuestXP) - 1;
-	end
 
-	module.playerCanLevel = not module:IsPlayerMaxLevel(level);
+		module.playerCanLevel = true;
+	end
 end
