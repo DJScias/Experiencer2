@@ -1,9 +1,22 @@
-## Interface: 110007
+## Interface: 110100
 ## Title: Experiencer 2.0
 ## Notes: Simple but advanced tracking progress bar addon.
 ## Author: DJScias (Original: Sonaza)
 ## Version: @project-version@
 ## IconTexture: 413579
+## Category-enUS: Quests
+## Category-deDE: Quests
+## Category-esES: Misiones
+## Category-esMX: Misiones
+## Category-frFR: Quêtes
+## Category-itIT: Missioni
+## Category-koKR: 퀘스트
+## Category-ptBR: Missões
+## Category-ruRU: Задания
+## Category-zhCN: 任务
+## Category-zhTW: 任務
+## Group: Experiencer2
+
 ## OptionalDeps: Ace3
 ## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest, ExperiencerDB_module_threads
 
