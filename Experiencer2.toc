@@ -1,4 +1,4 @@
-## Interface: 110200
+## Interface: 110205
 ## Title: Experiencer 2.0
 ## Notes: Simple but advanced tracking progress bar addon.
 ## Author: DJScias (Original: Sonaza)
@@ -18,7 +18,7 @@
 ## Group: Experiencer2
 
 ## OptionalDeps: Ace3
-## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest, ExperiencerDB_module_threads
+## SavedVariables: ExperiencerDB, ExperiencerDB_module_experience, ExperiencerDB_module_reputation, ExperiencerDB_module_artifact, ExperiencerDB_module_honor, ExperiencerDB_module_conquest, ExperiencerDB_module_threads, ExperiencerDB_module_infinitepower
 
 ## X-Curse-Project-ID: 926475
 ## X-Wago-ID: E6gLVRK1
@@ -40,6 +40,7 @@ modules\artifact.lua
 modules\honor.lua
 modules\conquest.lua
 modules\threads.lua
+modules\infinitepower.lua
 events.lua
 databroker.lua
 Frame.xml
