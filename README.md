@@ -3,7 +3,7 @@ Experience bar replacement for World of Warcraft.
 Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.  
 
 Available on [CurseForge](https://www.curseforge.com/wow/addons/experiencer-2-0), [Wago.io](https://addons.wago.io/addons/experiencer2) and [WoWInterface](https://www.wowinterface.com/downloads/fileinfo.php?id=26805)!  
-Currently supports: The War Within 11.1.5.  
+Currently supports: The War Within 11.2.5.  
 
 ## General description
 Experiencer is a minimum configuration required experience bar addon. It tracks multiple progress bar options which can even be split up into three different sections to display multiple data sources simultaneously.
@@ -13,7 +13,8 @@ The following options are supported:
 - Artifact power  
 - Honor  
 - Conquest  
-- Threads (WoW Remix's Cloak)  
+- Threads (WoW Remix) 
+- Infinite Power (WoW Remix) 
 
 ### Experience tracking
 Experiencer will display your current rested percentage and remaining exp (and percentage) required to level. The session values are saved even when you log out and can be reset from the experience options menu.
@@ -43,11 +44,15 @@ Experiencer is capable of tracking your honor.
 ### Conquest tracking
 Experiencer is capable of tracking your Conquest, provided you are max level.  
 
-### Thread tracking (WoW Remix's Cloak)
-**Now disabled with Remix's end.**  
-Experiencer is capable of tracking your WoW Remix's Cloak of Infinite Potential threads:  
+### Thread tracking (WoW Remix) 
+Experiencer is capable of tracking your WoW Legion Remix and MoP Remix's Cloak of Infinite Potential threads:  
 - Tracks amount of total threads (and amount gained per session).  
 - Track remaining necessary threads for next "Infinite Power" level.  
+
+### Infinite Power tracking (WoW Remix) 
+Experiencer is capable of tracking your WoW Legion Remix Infinite Power:  
+- Tracks amount of total Infinite Power (and amount gained per session).  
+- Track remaining necessary Infinite Power for next "Unlimited Power" achievement level.  
 
 ### Usage and Shortcuts
 Experiencer options can be accessed by right clicking the bar or the DataBroker module. In order to make things smoother there are a few useful shortcuts.  
