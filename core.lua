@@ -204,12 +204,12 @@ function Addon:RegisterModule(moduleId, prototype)
 	local module = Addon:NewModule(moduleId, prototype or {});
 	module.id = moduleId;
 
-	module.Refresh = function(self, instant)
-		Addon:RefreshModule(self, instant);
+	module.Refresh = function(_, instant)
+		Addon:RefreshModule(module, instant)
 	end
 
-	module.RefreshText = function(self)
-		Addon:RefreshText(self);
+	module.RefreshText = function(_)
+		Addon:RefreshText(module)
 	end
 
 	return module;
@@ -1170,7 +1170,7 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 		rootDescription:CreateDivider();
 		rootDescription:CreateTitle("Sections");
 
-		local splitOneOption = rootDescription:CreateRadio("Split into one", function() return charDB.NumSplits == 1; end, function()
+		local splitOneOption = rootDescription:CreateRadio("Split into one", function() return charDB.NumSplits == 1; end, function()  -- luacheck: no unused (splitOneOption)
 			Addon:SetSplits(1);
 		end);
 		local splitTwoOption = rootDescription:CreateRadio("Split into two", function() return charDB.NumSplits == 2; end, function()
