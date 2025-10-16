@@ -8,9 +8,9 @@
 local ADDON_NAME, Addon = ...;
 
 local module = Addon:RegisterModule("threads", {
-	label       = "Cloak Threads",
+	label       = "Threads",
 	order       = 6,
-	active      = false,
+	active      = true,
 	savedvars   = {
 		char = {
 			session = {
@@ -18,6 +18,9 @@ local module = Addon:RegisterModule("threads", {
 				Time = 0,
 				TotalThreads = 0,
 			},
+			persist = {
+				CurrentThreads = 0,
+			}
 		},
 		global = {
 			ShowRemaining  		= true,
@@ -36,6 +39,8 @@ module.session = {
 module.levelUpRequiresAction = true;
 module.hasCustomMouseCallback = false;
 
+module.isMoPRemix = false;
+module.isLERemix = false;
 module.hasCloak = true;
 module.ready = false;
 
@@ -43,26 +48,57 @@ local GATHERED_THREADS = 0;
 local CLOAK_OF_INFINITE_POTENTIAL_ITEM_ID = 210333;
 
 function module:Initialize()
+	self:RegisterEvent("UNIT_AURA");
 	self:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
 	self:RegisterEvent("PLAYER_LOGIN");
 
-	C_Timer.After(4, function()
-		self:RegisterEvent("UNIT_INVENTORY_CHANGED");
-		module:UpdateHasCloak();
-	end);
+	self.label = module:GetLabel();
+
+	if module.isMoPRemix then
+		C_Timer.After(4, function()
+			self:RegisterEvent("UNIT_INVENTORY_CHANGED");
+			module:UpdateHasCloak();
+		end);
+	end
 
 	module:RestoreSession();
 end
 
 function module:IsDisabled()
-	return not PlayerGetTimerunningSeasonID() or not module.hasCloak or not module.ready;
+	if not module.isLERemix or (module.isMoPRemix and not module.hasCloak) then
+		return true;
+	end
+
+	return false;
+end
+
+function module:GetLabel()
+	if module.isMoPRemix then
+		return "Cloak Threads";
+	elseif module.isLERemix then
+		return self.label;
+	end
+end
+
+function module:GetLevelSource()
+	if module.isMoPRemix then
+		return "Cloak";
+	elseif module.isLERemix then
+		return "Infinite Power";
+	end
 end
 
 function module:PLAYER_LOGIN()
 	-- Necessary for first time to wait with querying Threads until API is ready.
 	-- This function ensures we receive a valid thread count at login.
 
-	module:GetCloakInfo(true)
+	module.isMoPRemix = (PlayerGetTimerunningSeasonID() == 1);
+	module.isLERemix = (PlayerGetTimerunningSeasonID() == 2);
+
+	if module.isMoPRemix or module.isLERemix then
+		module:GetThreadInfo(true);
+		module:Refresh();
+	end
 end
 
 function module:UNIT_INVENTORY_CHANGED(_, unit)
@@ -97,8 +133,10 @@ function module:Update(_)
         charSession.Time = time() - session.LoginTime;
         charSession.TotalThreads = session.GainedThreads;
     end;
-end
 
+	local charPersist = self.db.char.persist;
+	charPersist.CurrentThreads = GATHERED_THREADS;
+end
 
 function module:OnMouseDown(_)
 
@@ -110,30 +148,32 @@ end
 
 function module:GetText()
     if module:IsDisabled() then
-        return "No cloak";
+        return "No Remix";
     end
 
     local primaryText = {};
     local secondaryText = {};
 
-    local threads, cloakLevel, cloakNext, cloakLevelText = module:GetCloakInfo(false);
+    local threads, cloakLevel, cloakNext, cloakLevelText = module:GetThreadInfo(false);
 
-    local remaining = cloakNext - threads;
-    local progress = threads / cloakNext;
-    local progressColor = Addon:GetProgressColor(progress);
+    local remaining, progress, progressColor;
 
-    if cloakLevel == 12 then
+	remaining = cloakNext - threads;
+	progress = threads / cloakNext;
+	progressColor = Addon:GetProgressColor(progress);
+
+    if module.isLERemix or cloakLevel == 12 then
         progressColor = Addon:FinishedProgressColor();
     end
 
 	local globalDB = self.db.global;
-    if globalDB.ShowCloakLevel then
+    if globalDB.ShowCloakLevel and module.isMoPRemix then
         tinsert(primaryText,
             ("|cffffd200Cloak Level|r %s"):format(cloakLevelText)
         );
     end
 
-    if cloakLevel == 12 then
+    if module.isLERemix or cloakLevel == 12 then
         tinsert(primaryText,
             ("%s%s|r"):format(progressColor, BreakUpLargeNumbers(threads))
         );
@@ -165,11 +205,11 @@ function module:HasChatMessage()
 end
 
 function module:GetChatMessage()
-    local threads, _, cloakNext, cloakLevelText = module:GetCloakInfo(false);
+    local threads, _, cloakNext, cloakLevelText = module:GetThreadInfo(false);
     local remaining = cloakNext - threads;
 
     local progress = threads / cloakNext;
-    local leveltext = ("Currently cloak level %s"):format(cloakLevelText);
+    local leveltext = ("Currently %s level %s"):format(module:GetLevelSource(), cloakLevelText);
 
     return ("%s at %s/%s (%d%%) with %s to go"):format(
         leveltext,
@@ -192,7 +232,7 @@ function module:GetBarData()
     };
 
     if not module:IsDisabled() then
-        data.current, data.level, data.max = module:GetCloakInfo(false);
+		data.current, data.level, data.max = module:GetThreadInfo(false);
     end
 
     return data;
@@ -201,7 +241,7 @@ end
 function module:GetOptionsMenu(currentMenu)
     local globalDB = self.db.global;  -- Cache self.db.global to globalDB
 
-    currentMenu:CreateTitle("Cloak Thread Options");
+    currentMenu:CreateTitle(module:GetLabel() .. " Options");
 
     currentMenu:CreateRadio("Show remaining threads",
         function() return globalDB.ShowRemaining == true; end,
@@ -233,32 +273,64 @@ function module:GetOptionsMenu(currentMenu)
 
     currentMenu:CreateCheckbox("Remember session data",
         function() return globalDB.KeepSessionData; end,
-        function() 
+        function()
             globalDB.KeepSessionData = not globalDB.KeepSessionData;
         end
     );
 
     currentMenu:CreateButton("Reset session",
-        function() 
+        function()
             module:ResetSession();
         end
     ):SetResponse(MenuResponse.Refresh);
 
-    currentMenu:CreateDivider();
+	if module.isMoPRemix then
+		currentMenu:CreateDivider();
 
-    currentMenu:CreateCheckbox("Show cloak level",
-        function() return globalDB.ShowCloakLevel; end,
-        function()
-            globalDB.ShowCloakLevel = not globalDB.ShowCloakLevel;
-            module:RefreshText();
-        end
-    );
+		currentMenu:CreateCheckbox("Show cloak level",
+			function() return globalDB.ShowCloakLevel; end,
+			function()
+				globalDB.ShowCloakLevel = not globalDB.ShowCloakLevel;
+				module:RefreshText();
+			end
+		);
+	end
 end
 
 ------------------------------------------
 
+local firstRun = true;
+
+function module:UNIT_AURA(_, unitTarget, updateInfo)
+	if unitTarget ~= "player" or not module.isLERemix then
+		return;
+	end
+
+	if updateInfo.updatedAuraInstanceIDs then
+		for _, auraInstanceID in ipairs(updateInfo.updatedAuraInstanceIDs) do
+			local auraInfo = C_UnitAuras.GetAuraDataByAuraInstanceID("player", auraInstanceID);
+
+			if auraInfo and auraInfo.spellId == 1232454 then
+				local threads = 0;
+				for i = 1,16 do
+					local stat = auraInfo.points[i];
+					threads = threads + stat;
+				end
+				local threadsChange = threads - GATHERED_THREADS;
+				GATHERED_THREADS = threads;
+				if not firstRun then
+					module.session.GainedThreads = module.session.GainedThreads + threadsChange;
+				end
+				firstRun = false;
+				module:Refresh();
+				return;
+			end
+		end
+	end
+end
+
 function module:CURRENCY_DISPLAY_UPDATE(_, currencyType, _, quantityChange)
-    if not currencyType then return; end
+    if not module.ready or not currencyType or module.isLERemix then return; end
 
     if currencyType == 3001 or (currencyType >= 2853 and currencyType <= 2860) then
         -- We set a 0.5 timer as the cloak needs a small bit of time to update its values.
@@ -293,45 +365,68 @@ function module:ResetSession()
 	module:RefreshText();
 end
 
-function module:GetCloakInfo(isInitialLogin)
-    local c = {0, 1, 2, 3, 4, 5, 6, 7, 148};
-    local threads = 0;
-    local cloakLevel = 0;
-    local cloakLevelText = "0";
-    local cloakNext = 40;
+function module:GetThreadInfo(isInitialLogin)
+    local level = 0;
+    local levelText = "0";
+    local nextLevel = 40;
 
-    for i = 1, #c do
-        threads = threads + C_CurrencyInfo.GetCurrencyInfo(2853 + c[i]).quantity;
-    end
+	if module.isLERemix then
+		level = 1;
+		nextLevel = 1;
+	end
+
+	local threads = 0;
+	local aura, maxPoints;
+	if module.isMoPRemix then
+		aura = C_UnitAuras.GetPlayerAuraBySpellID(440393) -- MoP Remix
+		maxPoints = 9;
+	elseif module.isLERemix then
+		aura = C_UnitAuras.GetPlayerAuraBySpellID(1232454) -- Legion Remix
+		maxPoints = 16;
+	end
+
+	if aura then
+		for i = 1, maxPoints do
+			threads = threads + aura.points[i];
+		end
+	end
+
+	local charPersist = self.db.char.persist;
+	if charPersist.CurrentThreads and charPersist.CurrentThreads > 0 and threads == 0 then
+		threads = charPersist.CurrentThreads;
+	end
+
     GATHERED_THREADS = threads;
 
-    local levels = {
-        {threshold = 4200, text = "XII", level = 12},
-        {threshold = 2200, text = "XI", level = 11},
-        {threshold = 700, text = "X", level = 10},
-        {threshold = 600, text = "IX", level = 9},
-        {threshold = 500, text = "VIII", level = 8},
-        {threshold = 400, text = "VII", level = 7},
-        {threshold = 300, text = "VI", level = 6},
-        {threshold = 250, text = "V", level = 5},
-        {threshold = 200, text = "IV", level = 4},
-        {threshold = 150, text = "III", level = 3},
-        {threshold = 100, text = "II", level = 2},
-        {threshold = 40, text = "I", level = 1},
-    };
+	if module.isMoPRemix then
+		local cloakLevels = {
+			{threshold = 4200, text = "XII", level = 12},
+			{threshold = 2200, text = "XI", level = 11},
+			{threshold = 700, text = "X", level = 10},
+			{threshold = 600, text = "IX", level = 9},
+			{threshold = 500, text = "VIII", level = 8},
+			{threshold = 400, text = "VII", level = 7},
+			{threshold = 300, text = "VI", level = 6},
+			{threshold = 250, text = "V", level = 5},
+			{threshold = 200, text = "IV", level = 4},
+			{threshold = 150, text = "III", level = 3},
+			{threshold = 100, text = "II", level = 2},
+			{threshold = 40, text = "I", level = 1},
+		};
 
-    for i, v in ipairs(levels) do
-        if GATHERED_THREADS > v.threshold then
-            cloakLevelText = v.text;
-            cloakLevel = v.level;
-            cloakNext = levels[i - 1] and levels[i - 1].threshold or GATHERED_THREADS;
-            break;
-        end
-    end
+		for i, v in ipairs(cloakLevels) do
+			if GATHERED_THREADS > v.threshold then
+				levelText = v.text;
+				level = v.level;
+				nextLevel = cloakLevels[i - 1] and cloakLevels[i - 1].threshold or GATHERED_THREADS;
+				break;
+			end
+		end
+	end
 
     if isInitialLogin then
         module.ready = true;
     end
 
-    return GATHERED_THREADS, cloakLevel, cloakNext, cloakLevelText;
+	return GATHERED_THREADS, level, nextLevel, levelText;
 end
