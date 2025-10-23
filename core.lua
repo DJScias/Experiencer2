@@ -335,6 +335,10 @@ function Addon:RefreshModule(module, instant)
 end
 
 function Addon:RefreshText(module)
+	if InCombatLockdown() then
+		return;
+	end
+
 	for _, moduleFrame in Addon:GetModuleFrameIterator() do
 		if not module or moduleFrame.module == module then
 			moduleFrame:RefreshText();
