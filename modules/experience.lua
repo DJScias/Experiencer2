@@ -617,6 +617,7 @@ end
 function module:PLAYER_REGEN_ENABLED()
 	RunNextFrame(function()
 		if updateAfterCombat then
+			updateAfterCombat = false;
 			module:Refresh();
 		end
 	end);
