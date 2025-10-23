@@ -97,6 +97,7 @@ function module:Initialize()
 	self:RegisterEvent("QUEST_LOG_UPDATE");
 	self:RegisterEvent("UNIT_INVENTORY_CHANGED");
 	self:RegisterEvent("UPDATE_EXPANSION_LEVEL");
+	self:RegisterEvent("PLAYER_REGEN_ENABLED");
 
 	module.playerCanLevel = not module:IsPlayerMaxLevel();
 
@@ -562,6 +563,8 @@ function module:CHAT_MSG_SYSTEM(_, msg)
 	end
 end
 
+local updateAfterCombat = false;
+
 function module:PLAYER_XP_UPDATE()
 	local current_xp = UnitXP("player");
 	local max_xp = UnitXPMax("player");
@@ -580,11 +583,19 @@ function module:PLAYER_XP_UPDATE()
 		module.session.QuestsToLevel = ceil(remaining_xp / module.session.AverageQuestXP);
 	end
 
-	module:Refresh();
+	if not InCombatLockdown() then
+		module:Refresh();
+	else
+		updateAfterCombat = true;
+	end
 end
 
 function module:UPDATE_EXHAUSTION()
-	module:Refresh();
+	if not InCombatLockdown() then
+		module:Refresh();
+	else
+		updateAfterCombat = true;
+	end
 end
 
 function module:PLAYER_LEVEL_UP(_, level)
@@ -601,4 +612,12 @@ function module:PLAYER_LEVEL_UP(_, level)
 
 		module.playerCanLevel = true;
 	end
+end
+
+function module:PLAYER_REGEN_ENABLED()
+	RunNextFrame(function()
+		if updateAfterCombat then
+			module:Refresh();
+		end
+	end);
 end
