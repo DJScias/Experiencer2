@@ -1,4 +1,4 @@
-## Interface: 110205
+## Interface: 110207
 ## Title: Experiencer 2.0
 ## Notes: Simple but advanced tracking progress bar addon.
 ## Author: DJScias (Original: Sonaza)
