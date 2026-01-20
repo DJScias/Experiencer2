@@ -161,6 +161,8 @@ function Addon:OnEnable()
 	Addon:RegisterEvent("PET_BATTLE_OPENING_START");
 	Addon:RegisterEvent("PET_BATTLE_CLOSE");
 
+	Addon:ToggleStatusTrackingBar();
+
 	ExperiencerFrame:EnableMouse(true);
 	ExperiencerFrame:EnableMouseWheel(true);
 
@@ -246,6 +248,32 @@ function Addon:HideBar()
 	ExperiencerFrameBars:Hide();
 end
 
+function Addon:ToggleStatusTrackingBar()
+	if Addon.db.char.ToggleBar then
+		StatusTrackingBarManager:UnregisterAllEvents()
+		StatusTrackingBarManager:Hide()
+	else
+		-- From https://www.townlong-yak.com/framexml/55818/Blizzard_ActionBar/StatusTrackingManager.lua#24
+		StatusTrackingBarManager:RegisterEvent("UPDATE_FACTION");
+		StatusTrackingBarManager:RegisterEvent("MAJOR_FACTION_RENOWN_LEVEL_CHANGED");
+		StatusTrackingBarManager:RegisterEvent("ENABLE_XP_GAIN");
+		StatusTrackingBarManager:RegisterEvent("DISABLE_XP_GAIN");
+		StatusTrackingBarManager:RegisterEvent("CVAR_UPDATE");
+		StatusTrackingBarManager:RegisterEvent("UPDATE_EXPANSION_LEVEL");
+		StatusTrackingBarManager:RegisterEvent("PLAYER_ENTERING_WORLD");
+		StatusTrackingBarManager:RegisterEvent("HONOR_XP_UPDATE");
+		StatusTrackingBarManager:RegisterEvent("ZONE_CHANGED");
+		StatusTrackingBarManager:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+		StatusTrackingBarManager:RegisterEvent("UNIT_INVENTORY_CHANGED");
+		StatusTrackingBarManager:RegisterEvent("ARTIFACT_XP_UPDATE");
+		StatusTrackingBarManager:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED");
+		StatusTrackingBarManager:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
+		StatusTrackingBarManager:RegisterUnitEvent("UNIT_LEVEL", "player");
+		StatusTrackingBarManager:Show()
+		StatusTrackingBarManager:UpdateBarsShown()
+	end
+end
+
 function Addon:GetProgressColor(progress)
 	local r = math.floor(math.min(1.0, math.max(0.0, 2.0 - progress * 1.8)) * 255);
 	local g = math.floor(math.min(1.0, math.max(0.0, progress * 2.0)) * 255);
@@ -263,6 +291,10 @@ function Addon:FinishedProgressColor()
 end
 
 local function UnitAuraByNameOrId(unit, aura_name_or_id, filter)
+	if C_Secrets and C_Secrets.ShouldAurasBeSecret() then
+		return; -- Aura handling, through for example spellId, is not allowed here.
+	end
+
     local auraIndex = 1;
     local auraInfo = C_UnitAuras.GetAuraDataByIndex(unit, auraIndex, filter);
 
@@ -335,10 +367,6 @@ function Addon:RefreshModule(module, instant)
 end
 
 function Addon:RefreshText(module)
-	if InCombatLockdown() then
-		return;
-	end
-
 	for _, moduleFrame in Addon:GetModuleFrameIterator() do
 		if not module or moduleFrame.module == module then
 			moduleFrame:RefreshText();
@@ -1092,12 +1120,23 @@ function Addon:OpenContextMenu(clickedModuleIndex)
 	local numTotalEnabled = Addon:GetNumOfEnabledModules();
 
 	MenuUtil.CreateContextMenu(UIParent, function(_, rootDescription)
+		-- Resolve taint issue with dropdowns (https://github.com/Stanzilla/WoWUIBugs/issues/783)
+		rootDescription:SetMinimumWidth(1);
+
 		local title = rootDescription:CreateTitle("Experiencer Options");
 		title:SetTooltip(function(tooltip, elementDescription)
 			GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
 			GameTooltip_AddNormalLine(tooltip, "Version: " .. C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"));
 		end);
 		rootDescription:CreateButton(("%s bar"):format(charDB.Visible and "Hide" or "Show"), function() Addon:ToggleVisibility(); end);
+		local toggleBar = rootDescription:CreateCheckbox("Hide Blizzard status tracking bar", function() return charDB.ToggleBar; end, function()
+			charDB.ToggleBar = not charDB.ToggleBar;
+			Addon:ToggleStatusTrackingBar();
+		end);
+		toggleBar:SetTooltip(function(tooltip, elementDescription)
+			GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+			GameTooltip_AddNormalLine(tooltip, "This bar displays Experience, Reputation, Honor, etc.");
+		end);
 		local flashOption = rootDescription:CreateCheckbox("Flash when able to level up", function() return charDB.FlashLevelUp; end, function()
 			charDB.FlashLevelUp = not charDB.FlashLevelUp;
 		end);
