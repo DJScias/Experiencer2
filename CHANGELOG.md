@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.0] - 2026-01-20
+First update for Midnight to make sure it handles the combat restrictions put in place.  
+House XP tracker bar is planned sooner or later, but allowing Experiencer to work in Midnight is a priority.  
+
+### Added  
+- Add support for hiding the default Blizzard status tracking bar (Experience, Reputation, etc).
+
+### Changed  
+- 12.0.0 TOC bump.
+- Deferred addon logic where required to happen after combat to avoid Midnight's restrictions.
+
 ## [6.4.1] - 2025-12-03
 
 ### Changed  
