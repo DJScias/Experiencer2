@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.1] - 2026-02-18
+Small hotfix update for the second Midnight pre-patch, fixing a secret error related to pausing (AFK).
+
+### Fixed  
+- Handle secret-related pause (AFK) check for experience in combat [#21](https://github.com/DJScias/Experiencer2/issues/21)).  
+
 ## [6.5.0] - 2026-01-20
 First update for Midnight to make sure it handles the combat restrictions put in place.  
 House XP tracker bar is planned sooner or later, but allowing Experiencer to work in Midnight is a priority.  
