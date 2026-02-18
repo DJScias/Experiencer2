@@ -119,14 +119,16 @@ function module:Update(elapsed)
 
 	currentSession.Paused = UnitIsAFK("player");
 
-	if currentSession.Paused then
-		currentSession.PausedTime = currentSession.PausedTime + elapsed;
-		if lastPaused ~= currentSession.Paused then
-			self:Refresh();
+	if canaccessvalue(currentSession.Paused) then
+		if currentSession.Paused then
+			currentSession.PausedTime = currentSession.PausedTime + elapsed;
+			if lastPaused ~= currentSession.Paused then
+				self:Refresh();
+			end
+		elseif lastPaused ~= currentSession.Paused then
+			currentSession.LoginTime = currentSession.LoginTime + math.floor(currentSession.PausedTime);
+			currentSession.PausedTime = 0;
 		end
-	elseif lastPaused ~= currentSession.Paused then
-		currentSession.LoginTime = currentSession.LoginTime + math.floor(currentSession.PausedTime);
-		currentSession.PausedTime = 0;
 	end
 
 	if self.db == nil then
