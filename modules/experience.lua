@@ -119,7 +119,7 @@ function module:Update(elapsed)
 
 	currentSession.Paused = UnitIsAFK("player");
 
-	if canaccessvalue(currentSession.Paused) then
+	if canaccessvalue(currentSession.Paused) and canaccessvalue(lastPaused) then
 		if currentSession.Paused then
 			currentSession.PausedTime = currentSession.PausedTime + elapsed;
 			if lastPaused ~= currentSession.Paused then
