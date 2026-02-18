@@ -1138,6 +1138,10 @@ local reputationPattern = FACTION_STANDING_INCREASED:gsub("%%s", "(.-)"):gsub("%
 local warbandReputationPattern = FACTION_STANDING_INCREASED_ACCOUNT_WIDE:gsub("%%s", "(.-)"):gsub("%%d", "(%%d*)%%");
 
 function module:CHAT_MSG_COMBAT_FACTION_CHANGE(event, message, ...)
+	if not canaccessvalue(message) then
+		return;
+	end
+
 	local reputation, amount = message:match(reputationPattern);
 
 	-- If no reputation is found, check for warband (account-wide).
