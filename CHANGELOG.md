@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.3] - 2026-02-22
+Yet another fix in regards to secrets (instances).
+
+### Fixed  
+- Fix secret-related issue in regards to experience checks in instances.  
+
 ## [6.5.2] - 2026-02-18
-More fixes in regards to secrets (mainly combat-related).
+More fixes in regards to secrets (mainly combat-related).  
 
 ### Fixed  
 - Fix secret-related issue in regards to reputations in combat.  
