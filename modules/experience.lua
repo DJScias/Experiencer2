@@ -529,6 +529,10 @@ function module:UNIT_INVENTORY_CHANGED(_, unit)
 end
 
 function module:CHAT_MSG_SYSTEM(_, msg)
+	if not canaccessvalue(msg) then
+		return;
+	end
+
 	if msg:match(QUEST_COMPLETED_PATTERN) then
 		module.QuestCompleted = true;
 		return;
