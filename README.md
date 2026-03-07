@@ -3,7 +3,7 @@ Experience bar replacement for World of Warcraft.
 Continuation of the old [Experiencer](https://www.curseforge.com/wow/addons/experiencer) updated for Dragonflight and later.  
 
 Available on [CurseForge](https://www.curseforge.com/wow/addons/experiencer-2-0), [Wago.io](https://addons.wago.io/addons/experiencer2) and [WoWInterface](https://www.wowinterface.com/downloads/fileinfo.php?id=26805)!  
-Currently supports: Midnight 12.0.0.  
+Currently supports: Midnight 12.0.1.  
 
 ## General description
 Experiencer is a minimum configuration required experience bar addon. It tracks multiple progress bar options which can even be split up into three different sections to display multiple data sources simultaneously.
@@ -65,7 +65,7 @@ Experiencer options can be accessed by right clicking the bar or the DataBroker 
 ## Notes
 Please keep the following in mind:  
 - Experiencer's bar can only be anchored **to the bottom or top of your screen**, which means it may overlap with other frames positioned in these places.  
-- Experiencer will not hide the existing experience bar by Blizzard, requiring a separate addon for this (Dominos, Bartender, ElvUI, etc...).
+- Experiencer has an option hide the existing experience bar by Blizzard, but a separate addon can also be used for this (Dominos, Bartender, ElvUI, etc...).
 - Experiencer's bar color is by default your current character's class color, this can be changed in the options.
 
 ## Databroker
