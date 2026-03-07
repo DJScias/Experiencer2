@@ -117,18 +117,16 @@ function module:Update(elapsed)
 	local charDB = self.db.char;
 	local currentSession = self.session;
 
-	currentSession.Paused = UnitIsAFK("player");
+	currentSession.Paused = IsChatAFK(); -- Does not return secrets
 
-	if canaccessvalue(currentSession.Paused) and canaccessvalue(lastPaused) then
-		if currentSession.Paused then
-			currentSession.PausedTime = currentSession.PausedTime + elapsed;
-			if lastPaused ~= currentSession.Paused then
-				self:Refresh();
-			end
-		elseif lastPaused ~= currentSession.Paused then
-			currentSession.LoginTime = currentSession.LoginTime + math.floor(currentSession.PausedTime);
-			currentSession.PausedTime = 0;
+	if currentSession.Paused then
+		currentSession.PausedTime = currentSession.PausedTime + elapsed;
+		if lastPaused ~= currentSession.Paused then
+			self:Refresh();
 		end
+	elseif lastPaused ~= currentSession.Paused then
+		currentSession.LoginTime = currentSession.LoginTime + math.floor(currentSession.PausedTime);
+		currentSession.PausedTime = 0;
 	end
 
 	if self.db == nil then
