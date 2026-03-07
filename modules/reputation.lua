@@ -142,7 +142,7 @@ function module:SetStanding(factionID)
 	local isCapped = false;
 
 	if majorFactionData then
-		isCapped = not majorFactionData.renownLevelThreshold;
+		isCapped = C_MajorFactions.HasMaximumRenown(factionID);
 
 		standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
 		standingColor = {r = 0.00, g = 0.80, b = 1.00};
@@ -157,9 +157,8 @@ function module:SetStanding(factionID)
 	end
 
 	local IsFactionParagon = C_Reputation.IsFactionParagon(factionID);
-	if isCapped and IsFactionParagon or IsFactionParagon then
+	if IsFactionParagon and isCapped then
 		local currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
-		isCapped = false;
 
 		local paragonLevel = math.floor(currentReputation / maxReputation);
 
@@ -195,7 +194,7 @@ function module:GetText()
 
 	-- Determine if reputation is capped
 	if majorFactionData then
-		isCapped = not majorFactionData.renownLevelThreshold; -- Renowns don't get capped currently
+		isCapped = C_MajorFactions.HasMaximumRenown(factionID);
 	elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 		isCapped = not reputationInfo.nextThreshold;
 	elseif standing then
@@ -211,7 +210,7 @@ function module:GetText()
 	local paragonLevel = 0;
 
 	local IsFactionParagon = C_Reputation.IsFactionParagon(factionID);
-	if isCapped and IsFactionParagon or IsFactionParagon then
+	if IsFactionParagon and isCapped then
 		currentReputation, maxReputation, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID);
 		isCapped = false;
 		isParagon = true;
@@ -310,7 +309,7 @@ function module:GetChatMessage()
 
 	if majorFactionData then
 		standingText = string.format("|cnHEIRLOOM_BLUE_COLOR:Renown %s|r", majorFactionData.renownLevel);
-		isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
+		isCapped = C_MajorFactions.HasMaximumRenown(factionID);
 	elseif reputationInfo and reputationInfo.friendshipFactionID > 0 then
 		standingText = reputationInfo.reaction;
 		isCapped = not reputationInfo.nextThreshold;
@@ -322,7 +321,7 @@ function module:GetChatMessage()
 	local paragonLevel = 0;
 
 	local IsFactionParagon = C_Reputation.IsFactionParagon(factionID);
-	if isCapped and IsFactionParagon or IsFactionParagon then
+	if IsFactionParagon and isCapped then
 		currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 		minReputation = 0;
 		isCapped = false;
@@ -399,7 +398,7 @@ function module:GetBarData()
 
 		if majorFactionData then
 			minReputation = 0;
-			isCapped = not majorFactionData.renownLevelThreshold; -- This will never trigger for now, Renowns don't get capped.
+			isCapped = C_MajorFactions.HasMaximumRenown(factionID);
 		else
 			if reputationInfo and reputationInfo.friendshipFactionID > 0 then
 				if not reputationInfo.nextThreshold or reputationInfo.standing == MAX_REPUTATION_REACTION then
@@ -409,7 +408,7 @@ function module:GetBarData()
 		end
 
 		local IsFactionParagon = C_Reputation.IsFactionParagon(factionID);
-		if isCapped and IsFactionParagon or IsFactionParagon then
+		if IsFactionParagon and isCapped then
 			currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 			isCapped = false;
 			isParagon = true;
@@ -672,9 +671,8 @@ function module:GetReputationProgressByFactionID(factionID)
 	-- Handle Major Faction (Renown) and Paragon
 	if majorFactionData then
 		minReputation = 0;
-		if not majorFactionData.renownLevelThreshold then
-			isCapped = true;  -- Renown does not get capped currently
-		elseif C_Reputation.IsFactionParagon(factionID) then
+		isCapped = C_MajorFactions.HasMaximumRenown(factionID);
+		if C_Reputation.IsFactionParagon(factionID) and isCapped then
 			currentReputation, maxReputation = C_Reputation.GetFactionParagonInfo(factionID);
 			isParagon = true;
 			currentReputation = currentReputation % maxReputation;
