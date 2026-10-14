@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),  
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.5.5] - 2026-10-14
+Small update to bump the TOC, more updates will happen soon after RL allows it.
+
+### Changed  
+- 12.1.5 TOC bump.
+
 ## [6.5.4] - 2026-03-07
 First proper Midnight release, addressing a bug with showing reputations as "Paragon".  
 
